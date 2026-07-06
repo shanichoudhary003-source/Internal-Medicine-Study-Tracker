@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Internal Medicine — State Exam Revision · MU Sofia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FDF4F9; --surface:#FFFFFF; --surface-2:#FBEBF3;
+  --ink:#43233A; --muted:#9A6484; --faint:#C79BB4;
+  --primary:#C43F82; --primary-deep:#9E2E68; --primary-soft:#FBE2EF;
+  --accent:#9257C9; --accent-soft:#F2E8FB;
+  --correct:#2E9E6E; --correct-soft:#E4F5EC;
+  --incorrect:#D6455F; --incorrect-soft:#FCE7EC;
+  --line:#F4D9E7; --line-soft:#FBE9F2;
+  --shadow:0 1px 2px rgba(150,40,95,.05),0 8px 26px rgba(150,40,95,.09);
+  --radius:18px; --radius-sm:12px;
+}
+html[data-theme="dark"]{
+  --bg:#1B0F18; --surface:#271523; --surface-2:#301A29;
+  --ink:#F7E7F0; --muted:#CA9DB8; --faint:#8D627B;
+  --primary:#F27CB4; --primary-deep:#F9A0CC; --primary-soft:#3C1E31;
+  --accent:#C79BF0; --accent-soft:#2F1E3C;
+  --correct:#5CC896; --correct-soft:#16281F;
+  --incorrect:#F0808F; --incorrect-soft:#331A21;
+  --line:#3D2433; --line-soft:#2C1926;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:'Fraunces','Newsreader',Georgia,serif;font-weight:600;line-height:1.15;margin:0}
+a{color:inherit}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+::selection{background:var(--primary-soft)}
+
+/* ---------- Layout ---------- */
+.app{display:grid;grid-template-columns:320px 1fr;min-height:100vh}
+.sidebar{
+  background:var(--surface);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;height:100vh;position:sticky;top:0;overflow:hidden;
+}
+.brand{padding:20px 20px 14px;border-bottom:1px solid var(--line-soft)}
+.brand .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--primary);font-weight:600}
+.brand h1{font-size:20px;margin-top:4px;letter-spacing:-.01em}
+.brand .sub{font-size:12px;color:var(--muted);margin-top:3px}
+
+.searchbox{padding:12px 16px;border-bottom:1px solid var(--line-soft)}
+.searchbox input{
+  width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:var(--radius-sm);
+  background:var(--surface-2);color:var(--ink);font-size:13.5px;outline:none;
+}
+.searchbox input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+
+.nav{overflow-y:auto;flex:1;padding:8px 8px 24px}
+.nav::-webkit-scrollbar{width:9px}
+.nav::-webkit-scrollbar-thumb{background:var(--line);border-radius:5px;border:2px solid var(--surface)}
+.sec-head{
+  display:flex;align-items:center;gap:8px;width:100%;text-align:left;
+  padding:10px 10px;border-radius:var(--radius-sm);margin-top:4px;
+}
+.sec-head:hover{background:var(--surface-2)}
+.sec-roman{font-family:'Newsreader',serif;font-size:12px;color:var(--primary);font-weight:600;min-width:26px}
+.sec-name{font-size:12.5px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:var(--muted);flex:1}
+.sec-count{font-size:11px;color:var(--faint);font-variant-numeric:tabular-nums}
+.sec-chev{color:var(--faint);transition:transform .2s;font-size:11px}
+.sec-collapsed .sec-chev{transform:rotate(-90deg)}
+.topic-list{overflow:hidden}
+.sec-collapsed .topic-list{display:none}
+.topic-item{
+  display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  padding:8px 10px 8px 12px;border-radius:var(--radius-sm);font-size:13px;color:var(--ink);
+  line-height:1.35;
+}
+.topic-item:hover{background:var(--surface-2)}
+.topic-item.active{background:var(--primary-soft);color:var(--primary-deep);font-weight:500}
+.topic-num{font-size:11px;color:var(--faint);min-width:24px;font-variant-numeric:tabular-nums;flex-shrink:0}
+.topic-item.active .topic-num{color:var(--primary)}
+.topic-txt{flex:1}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--line);border:1px solid var(--line)}
+.dot.learning{background:var(--accent);border-color:var(--accent)}
+.dot.tested{background:var(--primary);border-color:var(--primary)}
+.dot.mastered{background:var(--correct);border-color:var(--correct)}
+.topic-item.locked{opacity:.5}
+.lock{font-size:10px;color:var(--faint)}
+
+/* ---------- Main ---------- */
+.main{overflow-y:auto;height:100vh}
+.topbar{
+  position:sticky;top:0;z-index:20;background:var(--surface);
+  border-bottom:1px solid var(--line);padding:10px 28px;
+  display:flex;align-items:center;gap:16px;
+}
+.topbar .crumb{font-size:12.5px;color:var(--muted);flex:1}
+.topbar .crumb b{color:var(--ink);font-weight:600}
+.iconbtn{
+  padding:7px 12px;border:1px solid var(--line);border-radius:var(--radius-sm);
+  background:var(--surface);font-size:12.5px;color:var(--muted);display:inline-flex;align-items:center;gap:6px;
+}
+.iconbtn:hover{border-color:var(--primary);color:var(--primary)}
+.progress-mini{display:flex;align-items:center;gap:9px}
+.progress-mini .bar{width:96px;height:6px;border-radius:4px;background:var(--line-soft);overflow:hidden}
+.progress-mini .bar i{display:block;height:100%;background:var(--primary);border-radius:4px;transition:width .4s}
+.progress-mini span{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+.wrap{max-width:860px;margin:0 auto;padding:34px 28px 96px}
+
+/* ---------- Dashboard ---------- */
+.hero{margin-bottom:30px}
+.hero .eyebrow{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--primary);font-weight:600}
+.hero h2{font-size:33px;letter-spacing:-.02em;margin-top:8px}
+.hero p{color:var(--muted);margin:10px 0 0;max-width:560px;font-size:15px}
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:26px 0}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow)}
+.stat .n{font-family:'Newsreader',serif;font-size:32px;font-weight:600;line-height:1;color:var(--primary-deep)}
+html[data-theme="dark"] .stat .n{color:var(--primary-deep)}
+.stat .l{font-size:12.5px;color:var(--muted);margin-top:7px}
+.continue-card{
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  color:#fff;border-radius:var(--radius);padding:22px 24px;margin-bottom:28px;box-shadow:var(--shadow);
+  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+}
+html[data-theme="dark"] .continue-card{color:#0F1518}
+.continue-card .lab{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;opacity:.8;font-weight:600}
+.continue-card h3{font-size:20px;margin-top:4px;color:inherit}
+.continue-card button{
+  background:#fff;color:var(--primary-deep);padding:11px 20px;border-radius:var(--radius-sm);
+  font-weight:600;font-size:13.5px;white-space:nowrap;
+}
+html[data-theme="dark"] .continue-card button{background:#0F1518;color:var(--primary-deep)}
+.sec-progress{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.sec-progress .row{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--line-soft)}
+.sec-progress .row:last-child{border-bottom:none}
+.sec-progress .row:hover{background:var(--surface-2);cursor:pointer}
+.sec-progress .rn{font-family:'Newsreader',serif;color:var(--primary);font-size:13px;min-width:28px;font-weight:600}
+.sec-progress .nm{flex:1;font-size:14px;font-weight:500}
+.sec-progress .bar{width:130px;height:7px;border-radius:4px;background:var(--line-soft);overflow:hidden}
+.sec-progress .bar i{display:block;height:100%;background:var(--primary);border-radius:4px}
+.sec-progress .pct{font-size:12.5px;color:var(--muted);min-width:66px;text-align:right;font-variant-numeric:tabular-nums}
+
+.section-title{font-size:14px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-family:'Inter';font-weight:600;margin:34px 0 14px}
+
+/* ---------- Topic view ---------- */
+.topic-header{margin-bottom:22px}
+.topic-header .tag{
+  display:inline-block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--primary);font-weight:600;background:var(--primary-soft);padding:4px 10px;border-radius:20px;
+}
+.topic-header h2{font-size:28px;letter-spacing:-.015em;margin-top:12px;line-height:1.15}
+.mode-tabs{display:flex;gap:4px;margin:22px 0 26px;border-bottom:1px solid var(--line);position:sticky;top:53px;background:var(--bg);z-index:10;padding-top:2px}
+.mode-tab{
+  padding:11px 18px;font-size:13.5px;font-weight:500;color:var(--muted);
+  border-bottom:2px solid transparent;margin-bottom:-1px;
+}
+.mode-tab:hover{color:var(--ink)}
+.mode-tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+
+/* Learn */
+.field{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:14px;overflow:hidden;box-shadow:var(--shadow)}
+.field-head{display:flex;align-items:center;gap:11px;padding:14px 20px;background:var(--surface-2);border-bottom:1px solid var(--line-soft)}
+.field-icon{width:26px;height:26px;border-radius:7px;background:var(--primary-soft);color:var(--primary-deep);display:grid;place-items:center;font-size:13px;font-weight:700;font-family:'Newsreader',serif}
+html[data-theme="dark"] .field-icon{color:var(--primary-deep)}
+.field-head h3{font-size:15.5px;letter-spacing:.01em}
+.field-body{padding:16px 20px 18px;font-family:'Newsreader',serif;font-size:16.5px;line-height:1.62;color:var(--ink)}
+.field-body ul{margin:8px 0;padding-left:20px}
+.field-body li{margin-bottom:6px}
+.field-body b,.field-body strong{font-weight:600}
+.field-body .hl{background:var(--accent-soft);padding:1px 5px;border-radius:4px;font-family:'Inter';font-size:14px;font-weight:500}
+.learn-actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.btn-primary{background:var(--primary);color:#fff;padding:11px 20px;border-radius:var(--radius-sm);font-weight:600;font-size:13.5px}
+html[data-theme="dark"] .btn-primary{color:#0F1518}
+.btn-primary:hover{background:var(--primary-deep)}
+.btn-ghost{border:1px solid var(--line);padding:11px 20px;border-radius:var(--radius-sm);font-weight:500;font-size:13.5px;color:var(--muted)}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
+
+/* Test */
+.quiz-progress{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.quiz-progress .bar{flex:1;height:6px;background:var(--line-soft);border-radius:4px;overflow:hidden}
+.quiz-progress .bar i{display:block;height:100%;background:var(--primary);transition:width .3s}
+.quiz-progress span{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.qcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow)}
+.qcard .qn{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--primary);font-weight:600}
+.qcard .qq{font-family:'Newsreader',serif;font-size:20px;line-height:1.35;margin:10px 0 18px}
+.qcard textarea{
+  width:100%;min-height:92px;padding:13px 15px;border:1px solid var(--line);border-radius:var(--radius-sm);
+  background:var(--surface-2);color:var(--ink);font-family:'Inter';font-size:14.5px;line-height:1.5;resize:vertical;outline:none;
+}
+.qcard textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+.qcard textarea:disabled{opacity:.75}
+.q-actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.feedback{margin-top:18px;border-radius:var(--radius-sm);padding:16px 18px;border:1px solid}
+.feedback.correct{background:var(--correct-soft);border-color:var(--correct)}
+.feedback.wrong{background:var(--incorrect-soft);border-color:var(--incorrect)}
+.feedback .verdict{font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px}
+.feedback.correct .verdict{color:var(--correct)}
+.feedback.wrong .verdict{color:var(--incorrect)}
+.feedback .model{margin-top:11px;font-family:'Newsreader',serif;font-size:15.5px;line-height:1.55}
+.feedback .model .lab{font-family:'Inter';font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600;display:block;margin-bottom:4px}
+.override{margin-top:12px;font-size:12.5px;color:var(--muted)}
+.override button{text-decoration:underline;color:var(--primary);font-weight:500}
+.quiz-done{text-align:center;padding:44px 24px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.quiz-done .score{font-family:'Newsreader',serif;font-size:52px;font-weight:600;color:var(--primary-deep);line-height:1}
+html[data-theme="dark"] .quiz-done .score{color:var(--primary-deep)}
+.quiz-done p{color:var(--muted);margin:10px 0 22px}
+
+/* Flashcards */
+.fc-hint{color:var(--muted);font-size:13.5px;margin-bottom:18px}
+.fc-deck{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.fc{perspective:1200px;height:210px;cursor:pointer}
+.fc-inner{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
+.fc.flipped .fc-inner{transform:rotateY(180deg)}
+.fc-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:var(--radius);padding:20px;display:flex;flex-direction:column;box-shadow:var(--shadow);border:1px solid var(--line)}
+.fc-front{background:var(--surface)}
+.fc-front .fc-lab{font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--primary);font-weight:600}
+.fc-front .fc-q{font-family:'Newsreader',serif;font-size:20px;margin:auto 0;line-height:1.25}
+.fc-front .fc-tap{font-size:11.5px;color:var(--faint)}
+.fc-back{background:var(--primary-soft);transform:rotateY(180deg);overflow-y:auto}
+.fc-back .fc-a{font-family:'Newsreader',serif;font-size:14.5px;line-height:1.5;color:var(--primary-deep)}
+html[data-theme="dark"] .fc-back .fc-a{color:var(--ink)}
+
+/* Coming soon */
+.coming{text-align:center;padding:60px 24px;color:var(--muted)}
+.coming .ic{font-size:34px;margin-bottom:12px}
+.coming h3{font-size:22px;color:var(--ink);margin-bottom:8px}
+.coming p{max-width:420px;margin:0 auto}
+
+.hidden{display:none!important}
+.menu-toggle{display:none}
+.backdrop{display:none;position:fixed;inset:0;background:rgba(20,8,16,.45);z-index:50}
+.backdrop.show{display:block}
+
+/* reset button accent */
+.btn-reset:hover{border-color:var(--incorrect);color:var(--incorrect)}
+
+/* ---------- Progress tracker ---------- */
+.overall{display:flex;align-items:center;gap:28px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px 26px;box-shadow:var(--shadow);margin-bottom:16px;flex-wrap:wrap}
+.overall-ring{--p:0;width:116px;height:116px;border-radius:50%;background:conic-gradient(var(--primary) calc(var(--p)*1%),var(--line-soft) 0);display:grid;place-items:center;position:relative;flex-shrink:0}
+.overall-ring::before{content:"";position:absolute;inset:11px;border-radius:50%;background:var(--surface)}
+.overall-num{position:relative;font-family:'Fraunces',serif;font-size:27px;font-weight:600;color:var(--primary-deep);line-height:1}
+.overall-lab{position:relative;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-top:3px}
+.overall-stats{display:flex;gap:26px;flex-wrap:wrap}
+.overall-stats>div{display:flex;flex-direction:column;gap:2px}
+.overall-stats b{font-family:'Fraunces',serif;font-size:26px;font-weight:600;color:var(--ink);line-height:1}
+.overall-stats span{font-size:12px;color:var(--muted)}
+.progress-actions{display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap}
+.psec{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden}
+.psec-head{display:flex;align-items:center;gap:12px;padding:13px 18px;background:var(--surface-2);border-bottom:1px solid var(--line-soft)}
+.psec-head .rn{font-family:'Fraunces',serif;color:var(--primary);font-weight:600;font-size:13px;min-width:26px}
+.psec-name{flex:1;font-weight:600;font-size:14px}
+.psec-head .bar{width:100px;height:7px;border-radius:4px;background:var(--line-soft);overflow:hidden}
+.psec-head .bar i{display:block;height:100%;background:var(--primary);border-radius:4px}
+.psec-head .pct{font-size:12px;color:var(--muted);min-width:42px;text-align:right;font-variant-numeric:tabular-nums}
+.prow{display:flex;align-items:center;gap:11px;padding:9px 18px;border-bottom:1px solid var(--line-soft)}
+.prow:last-child{border-bottom:none}
+.prow.locked{opacity:.55}
+.pnum{font-size:11px;color:var(--faint);min-width:26px;font-variant-numeric:tabular-nums;flex-shrink:0}
+.pname{flex:1;font-size:13.5px;cursor:pointer;line-height:1.3}
+.pname:hover{color:var(--primary)}
+.prow.locked .pname{cursor:default}
+.pbadge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.pbadge.none{background:var(--line-soft);color:var(--muted)}
+.pbadge.learning{background:var(--accent-soft);color:var(--accent)}
+.pbadge.tested{background:var(--primary-soft);color:var(--primary-deep)}
+.pbadge.mastered{background:var(--correct-soft);color:var(--correct)}
+.pbadge.soon{background:transparent;color:var(--faint);border:1px dashed var(--line)}
+.preset{width:28px;height:28px;border-radius:9px;border:1px solid var(--line);color:var(--muted);font-size:14px;display:grid;place-items:center;flex-shrink:0}
+.preset:hover{border-color:var(--incorrect);color:var(--incorrect)}
+.preset-spacer{width:28px;flex-shrink:0}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:11px 20px;border-radius:24px;font-size:13px;font-weight:500;box-shadow:var(--shadow);z-index:100;opacity:0;transition:opacity .3s,transform .3s}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
+
+@media(max-width:900px){
+  .app{grid-template-columns:1fr}
+  .sidebar{position:fixed;left:0;top:0;width:300px;z-index:60;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.open{transform:translateX(0)}
+  .menu-toggle{display:inline-flex}
+  .backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50}
+  .backdrop.show{display:block}
+  .wrap{padding:24px 18px 90px}
+  .hero h2{font-size:26px}
+  .stat-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="eyebrow">MU Sofia · Internal Medicine</div>
+      <h1>State Exam Revision</h1>
+      <div class="sub">Learn · Test · Revise — 170 syllabus topics</div>
+    </div>
+    <div class="searchbox">
+      <input type="text" id="search" placeholder="Search topics…" autocomplete="off">
+    </div>
+    <nav class="nav" id="nav"></nav>
+  </aside>
+  <div class="backdrop" id="backdrop"></div>
+
+  <main class="main" id="main">
+    <div class="topbar">
+      <button class="iconbtn menu-toggle" id="menuToggle">☰</button>
+      <div class="crumb" id="crumb">Dashboard</div>
+      <div class="progress-mini" id="miniProgress" title="Open progress tracker" style="cursor:pointer">
+        <div class="bar"><i id="miniBar" style="width:0%"></i></div>
+        <span id="miniPct">0%</span>
+      </div>
+      <button class="iconbtn" id="exportBtn" title="Download your progress as a backup file">⇩ Backup</button>
+      <button class="iconbtn" id="importBtn" title="Restore progress from a backup file">⇧ Restore</button>
+      <button class="iconbtn" id="themeBtn" title="Toggle light / dark">◐</button>
+      <input type="file" id="importFile" accept="application/json" class="hidden">
+    </div>
+    <div class="wrap" id="view"></div>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+/* ============================================================
+   CONTENT
+   Each populated topic has: learn{definition,etiology,symptoms,
+   diagnosis,treatment,complications}, quiz[], flash{6 fields}
+   ============================================================ */
+const SECTIONS=[
+ {id:'pulm',roman:'I',name:'Pulmonary Diseases'},
+ {id:'cardio',roman:'II',name:'Cardiovascular Diseases'},
+ {id:'rheum',roman:'III',name:'Rheumatic Diseases'},
+ {id:'haem',roman:'IV',name:'Hematologic Diseases'},
+ {id:'endo',roman:'V',name:'Endocrine & Metabolic Diseases'},
+ {id:'gi',roman:'VI',name:'Gastrointestinal Diseases'},
+ {id:'renal',roman:'VII',name:'Renal Diseases'},
+ {id:'tox',roman:'VIII',name:'Toxicology & Allergic Disorders'},
+ {id:'onco',roman:'IX',name:'Oncologic Diseases'},
+ {id:'tx',roman:'X',name:'Principles of Treatment'}
+];
+
+/* Full syllabus — titles for every topic (content added batch by batch) */
+const TITLES={
+ pulm:["Acute bronchitis, tracheobronchitis, bronchiolitis","Chronic bronchitis, emphysema, COPD","Respiratory failure — pathophysiology & clinical features","Bacterial community-acquired pneumonia","Non-bacterial CAP (atypical, viral)","Hospital-acquired pneumonia & pneumonia in the immunocompromised","Treatment of pneumonias","Purulent diseases — bronchiectasis, lung abscess","Pleural effusions","Pulmonary tuberculosis","Pulmonary embolism","Diffuse parenchymal (interstitial) lung disease"],
+ cardio:["Mitral stenosis","Mitral regurgitation","Aortic stenosis","Aortic insufficiency","Endocarditis","Pericardial diseases · pericarditis · cardiac tamponade","Myocarditis","Cardiomyopathies","Acute heart failure — cardiac asthma, pulmonary oedema, cardiogenic shock","Treatment of acute heart failure","Chronic congestive heart failure — aetiology, pathogenesis, features","Cardiac function parameters & treatment of chronic HF","Ischaemic heart disease · stable angina pectoris","STEMI — acute MI with ST elevation","NSTE-ACS — unstable angina & NSTEMI","Conduction disturbances & their treatment","Supraventricular arrhythmias — classification & features","Treatment of supraventricular arrhythmias","Ventricular arrhythmias — classification & features","Treatment of ventricular arrhythmias","Antiarrhythmic drugs — classification & doses","Arterial hypertension — aetiology, classification, complications","Arterial hypertension — treatment","Acute rheumatic fever · rheumocarditis","Chronic cor pulmonale","Aortic diseases — dissection, aneurysm, Takayasu"],
+ rheum:["Rheumatoid arthritis","Ankylosing spondylitis","Reactive arthritis — rheumatic fever, Reiter, Lyme","Rheumatic fever — diagnosis & treatment","Psoriatic arthritis","Systemic lupus erythematosus","Progressive systemic sclerosis","Polymyositis / dermatomyositis","Vasculitis — classification & features","Henoch–Schönlein purpura","Polyarteritis nodosa","ANCA-associated vasculitis","Large-vessel vasculitis — Horton, Takayasu, Buerger","Antiphospholipid syndrome","Gout","Osteoarthritis","Osteoporosis","Soft-tissue rheumatism — fibromyalgia & others","Biological & biosimilar treatment of rheumatic disease","Humoral immunity changes in rheumatic disease"],
+ haem:["Iron-deficiency anaemia","Macrocytic & megaloblastic anaemias","Haemolytic anaemias · haemolysis","Aplastic anaemia · agranulocytosis","Hodgkin lymphoma","Non-Hodgkin lymphomas","Chronic lymphocytic leukaemia","Multiple myeloma","Chronic myeloid leukaemia","Polycythaemia vera","Acute myeloid leukaemia","Acute lymphocytic leukaemia in adults","Thrombocytopenia · immune thrombocytopenia","Haemophilia"],
+ endo:["Diabetes mellitus — aetiopathogenesis & features","Diabetes mellitus — treatment","Diabetes mellitus — complications","Obesity & metabolic syndrome","Dyslipidaemia","Hypothyroidism","Thyrotoxicosis · hyperthyroidism","Nodular goitre · endemic & sporadic goitre","Hyperprolactinaemia · prolactinoma","Hypercalcaemia","Hypocalcaemia","Acromegaly & diabetes insipidus","Hypercorticism","Hypocorticism","Hypogonadism — male & female","Autoimmune thyroid disorders","Polycystic ovary syndrome"],
+ gi:["GERD","Helicobacter pylori infection","Peptic ulcer","Malabsorption","Ulcerative colitis & Crohn's disease","Colon tumours","Chronic viral hepatitis","Fatty liver — alcoholic & non-alcoholic steatohepatitis","Primary biliary cholangitis · primary sclerosing cholangitis","Autoimmune hepatitis","Liver cirrhosis — aetiology, pathogenesis, features","Liver cirrhosis — complications","Ascites — diagnosis, differential, treatment","Cholelithiasis — aetiology & features","Cholelithiasis complications — cholecystitis, cholangitis","Acute & chronic pancreatitis","Cholestasis / jaundice syndrome"],
+ renal:["Acute post-streptococcal glomerulonephritis","Idiopathic nephrotic syndrome","Membranous glomerulonephritis","IgA nephropathy (Berger disease)","Membranoproliferative glomerulonephritis","Lupus nephritis","Kidney & diabetes","Renal amyloidosis","Acute urinary tract infections","Chronic pyelonephritis","Renal tuberculosis","Nephrolithiasis","Polycystic kidney disease","Acute kidney injury","Chronic renal failure — stages & course"],
+ tox:["Toxicodynamics & toxicokinetics of exogenous poisons","Treatment of acute exogenous poisoning","Poisoning — cardiovascular drugs, benzodiazepines, antipsychotics, others","Poisoning with alcohols — ethanol, methanol, ethylene glycol","Poisoning with psychoactive substances","Organophosphate poisoning","Carbon monoxide poisoning","Snake venom poisoning","Mushroom poisoning","Hereditary angioedema","Asthma — epidemiology, pathogenesis, diagnosis","Insect allergy","Food allergy","Drug allergy — type I, II, III","Drug allergy — type IV a,b,c,d","Anaphylaxis","Hypersensitivity pneumonitis"],
+ onco:["Renal tumours","Lung cancers","Oesophageal cancer","Gastric cancer","Colon tumours","Liver tumours","Pancreatic cancer","Carcinoma of the biliary ducts","Thyroid tumours"],
+ tx:["Treatment of peptic GI disease","Treatment of H. pylori infection","Principles in chronic liver disease","Treatment of chronic viral hepatitis","Treatment of cirrhosis complications","Treatment of chronic cholestasis","Antibacterial treatment of biliary tract infection","Treatment principles in poisoning","Treatment of urinary tract infection","Treatment in glomerulonephritis","Diabetes — insulin & oral treatment","Treatment of diabetic complications","Treatment with NSAIDs","Predialysis CRF treatment & dialysis indications","Clinical-pharmacological approach to NSAID therapy","Treatment of bacterial infection","Treatment with diuretics","Treatment with steroids","Treatment with immunomodulators","Treatment with cytostatics","Treatment of thromboembolism","Treatment of pneumonia","Treatment of asthma"]
+};
+
+/* ---------- helper to shorten field authoring ---------- */
+function L(definition,etiology,symptoms,diagnosis,treatment,complications){
+  return {definition,etiology,symptoms,diagnosis,treatment,complications};
+}
+/* ============ SECTION I — PULMONARY (fully populated) ============ */
+const CONTENT={
+"pulm-1":{learn:L(
+`Acute inflammation of the tracheobronchial tree. <b>Acute bronchitis</b> affects the large airways (bronchi); <b>tracheobronchitis</b> also involves the trachea; <b>bronchiolitis</b> is inflammation of the small airways (bronchioles) — chiefly a disease of infants (RSV) but also seen in adults post-virally. It is usually self-limiting and in otherwise healthy adults resolves within 1–3 weeks.`,
+`Predominantly <b>viral</b>: influenza A/B, parainfluenza, RSV, rhinovirus, coronavirus, adenovirus, human metapneumovirus. Bacterial causes are much less common — <span class="hl">Mycoplasma pneumoniae, Chlamydophila pneumoniae, Bordetella pertussis</span>. Non-infective triggers include smoke and inhaled irritants/pollutants. In infants with bronchiolitis, <b>RSV</b> predominates.`,
+`Often follows an upper-respiratory prodrome (coryza, sore throat). <b>Cough</b> is the hallmark — initially dry, later productive of mucoid or mucopurulent sputum, and may persist up to 3 weeks. Retrosternal burning/discomfort with tracheitis, low-grade fever, malaise, wheeze. In infantile bronchiolitis: tachypnoea, wheeze, respiratory distress and feeding difficulty.`,
+`<b>Clinical diagnosis.</b> Chest is often clear or shows scattered wheeze/rhonchi that shift with coughing. <span class="hl">Chest X-ray is normal</span> and is only needed to exclude pneumonia when there are focal signs, high fever, marked tachycardia/tachypnoea or in the elderly. Consider pertussis with paroxysmal/whooping cough lasting weeks. Procalcitonin is low. In bronchiolitis check pulse oximetry ± RSV testing.`,
+`Mostly <b>supportive</b>: rest, fluids, antipyretics/analgesics; antitussives for sleep. <b>Bronchodilators</b> if wheeze/bronchospasm. <span class="hl">Antibiotics are NOT routinely indicated</span> — the illness is viral. Reserve antibiotics for proven pertussis (a macrolide), suspected bacterial infection, or significant comorbidity. Oseltamivir if influenza is confirmed within 48 h. Bronchiolitis: supportive care, oxygen, hydration, nebulised saline.`,
+`Usually none. Possible: secondary bacterial pneumonia, exacerbation of underlying asthma or COPD, post-bronchiolitic wheeze in children, and — rarely — bronchiolitis obliterans.`),
+quiz:[
+ {q:"What is the single most common category of cause of acute bronchitis, and name two example organisms?",answer:"Viruses are by far the commonest cause — e.g. influenza, rhinovirus, RSV, parainfluenza, adenovirus, coronavirus.",keywords:["viral","virus","influenza","rhinovirus","rsv","parainfluenza","adenovirus"],minMatch:2},
+ {q:"A healthy 30-year-old has 5 days of cough after a cold, low-grade fever, and a clear chest. Should you prescribe antibiotics? Justify.",answer:"No. Acute bronchitis is almost always viral and self-limiting; antibiotics give no benefit and cause harm/resistance. Manage supportively. Antibiotics are reserved for pertussis, proven bacterial infection or significant comorbidity.",keywords:["no","viral","supportive","not indicated","self-limiting"],minMatch:1},
+ {q:"Which bacterial cause of a prolonged paroxysmal cough should you consider, and what antibiotic class treats it?",answer:"Bordetella pertussis (whooping cough) — treated with a macrolide (e.g. azithromycin/clarithromycin).",keywords:["pertussis","bordetella","macrolide","azithromycin","clarithromycin"],minMatch:2}
+],
+flash:L(
+"Self-limiting acute inflammation of the tracheobronchial tree; bronchiolitis = small-airway (infant/RSV) form.",
+"Mostly viral (influenza, RSV, rhino, parainfluenza). Rare bacterial: Mycoplasma, C. pneumoniae, B. pertussis.",
+"Cough (dry→productive, up to 3 wks), retrosternal burning, low fever, malaise, ± wheeze. Post-URTI.",
+"Clinical. CXR normal — only to exclude pneumonia if focal signs/high fever/elderly. Consider pertussis.",
+"Supportive: fluids, antipyretics, bronchodilator if wheeze. NO routine antibiotics. Oseltamivir if flu <48h.",
+"Usually none. 2° bacterial pneumonia; asthma/COPD flare; rarely bronchiolitis obliterans.")
+},
+
+"pulm-2":{learn:L(
+`<b>COPD</b> is a common, preventable and treatable disease defined by persistent respiratory symptoms and airflow limitation that is not fully reversible, caused by airway and alveolar abnormalities from noxious particles/gases. It encompasses two overlapping phenotypes: <b>chronic bronchitis</b> — a clinical diagnosis of productive cough ≥3 months per year for ≥2 consecutive years; and <b>emphysema</b> — a pathological diagnosis of permanent enlargement of airspaces distal to the terminal bronchioles with alveolar-wall destruction and no fibrosis.`,
+`<span class="hl">Cigarette smoking</span> is the dominant cause. Others: air pollution, occupational dusts/fumes, biomass-fuel smoke, and <b>α1-antitrypsin deficiency</b> (young patients, panacinar, lower-zone emphysema). Airway hyper-responsiveness and recurrent infection contribute.`,
+`Chronic productive cough, progressive exertional dyspnoea, wheeze and chest tightness. Two classic pictures: <b>"blue bloaters"</b> (chronic bronchitis — cyanosis, oedema, cor pulmonale) and <b>"pink puffers"</b> (emphysema — cachectic, pursed-lip breathing). Signs: barrel chest, hyperresonance, quiet breath sounds, prolonged expiration.`,
+`<span class="hl">Post-bronchodilator spirometry showing FEV1/FVC &lt; 0.70</span> confirms persistent airflow limitation; severity (GOLD 1–4) graded by FEV1 % predicted. CXR: hyperinflation, flattened diaphragms, bullae. CT quantifies emphysema. ABG: hypoxaemia ± hypercapnia. <b>DLCO reduced</b> in emphysema. Check α1-antitrypsin in early/atypical disease.`,
+`<b>Smoking cessation</b> is the only measure (besides long-term oxygen) that slows decline. Vaccinate (influenza, pneumococcal, COVID). Inhalers: <span class="hl">LABA + LAMA</span>; add ICS if blood eosinophilia, frequent exacerbations or asthma overlap; SABA as reliever. Pulmonary rehabilitation. <b>Long-term oxygen therapy</b> improves survival if PaO2 ≤55 mmHg (or ≤60 with cor pulmonale/polycythaemia). Roflumilast for the chronic-bronchitis phenotype; prophylactic azithromycin in selected patients. Surgery: lung-volume reduction, bullectomy, transplant. <b>Exacerbations</b>: SABA, systemic steroids, antibiotics if sputum more purulent/increased, and NIV for hypercapnic respiratory failure.`,
+`Acute exacerbations, respiratory failure, <b>cor pulmonale</b>/pulmonary hypertension, secondary polycythaemia, pneumothorax (bulla rupture), recurrent pneumonia, weight loss/muscle wasting, depression and increased cardiovascular risk.`),
+quiz:[
+ {q:"State the spirometric criterion that confirms COPD.",answer:"A post-bronchodilator FEV1/FVC ratio below 0.70 confirms persistent airflow limitation.",keywords:["fev1/fvc","0.7","70","post-bronchodilator","ratio"],minMatch:2},
+ {q:"Which two interventions have been shown to improve SURVIVAL (not just symptoms) in COPD?",answer:"Smoking cessation and long-term oxygen therapy (in chronic hypoxaemia). (Lung-volume-reduction surgery helps selected patients too.)",keywords:["smoking cessation","stop smoking","oxygen","ltot","long-term oxygen"],minMatch:2},
+ {q:"Give the PaO2 threshold for offering long-term oxygen therapy in a stable COPD patient without cor pulmonale.",answer:"PaO2 ≤ 55 mmHg (≈7.3 kPa). With cor pulmonale or secondary polycythaemia the threshold is ≤60 mmHg.",keywords:["55","7.3","60"],minMatch:1},
+ {q:"What condition should you suspect in a young non-smoker with lower-zone panacinar emphysema?",answer:"Alpha-1 antitrypsin deficiency.",keywords:["alpha-1","alpha 1","antitrypsin","a1at"],minMatch:1}
+],
+flash:L(
+"Persistent, not-fully-reversible airflow limitation. Chronic bronchitis = cough ≥3mo/yr ×2yr; emphysema = alveolar destruction.",
+"Smoking (main); pollution, biomass, occupational dust; α1-antitrypsin deficiency (young, lower-zone).",
+"Chronic cough, progressive dyspnoea, wheeze. Blue bloater vs pink puffer. Barrel chest, hyperresonance.",
+"Post-BD spirometry FEV1/FVC <0.70 → GOLD grade by FEV1%. CXR hyperinflation; ↓DLCO in emphysema.",
+"Stop smoking + vaccines. LABA+LAMA (±ICS if eos/exacerbations). LTOT if PaO2≤55 (≤60 w/ cor pulmonale). Exac: SABA+steroid±abx±NIV.",
+"Exacerbations, respiratory failure, cor pulmonale, polycythaemia, pneumothorax, pneumonia, cachexia.")
+},
+
+"pulm-3":{learn:L(
+`Respiratory failure is the failure of gas exchange, defined on arterial blood gas as <span class="hl">PaO2 &lt; 60 mmHg (8 kPa)</span> — <b>Type I (hypoxaemic)</b> — with or without <span class="hl">PaCO2 &gt; 45–50 mmHg (6–6.7 kPa)</span> — <b>Type II (hypercapnic / ventilatory)</b>. It may be acute or chronic (or acute-on-chronic).`,
+`<b>Type I</b> arises from V/Q mismatch, right-to-left shunt, diffusion impairment or low inspired O2 — e.g. pneumonia, pulmonary oedema, ARDS, PE, interstitial lung disease. <b>Type II</b> reflects alveolar hypoventilation — reduced minute ventilation or increased dead space / CO2 production — e.g. COPD, neuromuscular disease (Guillain–Barré, myasthenia), chest-wall disease, opioid/CNS depression, and exhausted severe asthma.`,
+`<b>Hypoxaemia</b>: dyspnoea, tachypnoea, central cyanosis, tachycardia, restlessness, confusion, arrhythmia. <b>Hypercapnia</b>: headache, drowsiness, confusion, <span class="hl">asterixis (flap)</span>, warm peripheries with bounding pulse, papilloedema and — if severe — CO2 narcosis and coma.`,
+`<b>Arterial blood gas defines the type.</b> Calculate the <b>A–a gradient</b>: it is normal in pure hypoventilation and low FiO2, but raised in V/Q mismatch, shunt and diffusion defects. A shunt is characterised by hypoxaemia that does not correct with supplemental oxygen. Add pulse oximetry, CXR and cause-specific workup.`,
+`<b>Treat the underlying cause.</b> Give oxygen targeting SpO2 94–98% — or <span class="hl">88–92% in patients at risk of CO2 retention</span> (e.g. COPD). <b>Non-invasive ventilation (BiPAP)</b> for hypercapnic failure (e.g. COPD exacerbation); CPAP for cardiogenic pulmonary oedema. Escalate to invasive mechanical ventilation if severe or NIV fails.`,
+`Progression to cardiorespiratory arrest, arrhythmia, hypoxic organ injury (brain, kidney, heart), pulmonary hypertension and cor pulmonale in chronic disease, and complications of ventilation (barotrauma, VAP).`),
+quiz:[
+ {q:"Give the arterial blood-gas values that define Type I and Type II respiratory failure.",answer:"Type I: PaO2 <60 mmHg (8 kPa) with normal/low PaCO2. Type II: PaO2 <60 mmHg PLUS PaCO2 >45–50 mmHg (6–6.7 kPa).",keywords:["60","8 kpa","paco2","45","50","hypercapnia","co2"],minMatch:2},
+ {q:"A patient's hypoxaemia does NOT improve despite high-flow oxygen. Which mechanism does this indicate?",answer:"A right-to-left shunt — hypoxaemia from a true shunt characteristically fails to correct with supplemental oxygen.",keywords:["shunt","right-to-left","right to left"],minMatch:1},
+ {q:"What oxygen saturation target do you use in a COPD patient at risk of CO2 retention?",answer:"SpO2 88–92% (rather than 94–98%), to avoid abolishing hypoxic respiratory drive and worsening hypercapnia.",keywords:["88","92","88-92"],minMatch:1},
+ {q:"Name the bedside sign of significant hypercapnia.",answer:"Asterixis — a coarse flapping tremor of the outstretched hands (CO2 flap); also drowsiness, bounding pulse and warm peripheries.",keywords:["asterixis","flap","flapping","tremor"],minMatch:1}
+],
+flash:L(
+"Failure of gas exchange. Type I: PaO2<60. Type II: PaO2<60 + PaCO2>45–50. Acute vs chronic.",
+"Type I: V/Q mismatch, shunt, diffusion, low FiO2 (pneumonia, oedema, ARDS, PE, ILD). Type II: hypoventilation (COPD, neuromuscular, CNS depression).",
+"Hypoxia: dyspnoea, cyanosis, confusion, tachycardia. Hypercapnia: headache, drowsy, flap, bounding pulse, warm hands.",
+"ABG defines type. A–a gradient: normal in hypoventilation/low FiO2, raised in V/Q mismatch/shunt. Shunt = won't correct with O2.",
+"Treat cause. O2 target 94–98% (88–92% if CO2 retainer). NIV/BiPAP for hypercapnia; CPAP for cardiogenic oedema; intubate if severe.",
+"Arrest, arrhythmia, hypoxic organ injury, cor pulmonale, ventilator complications.")
+},
+
+"pulm-4":{learn:L(
+`Bacterial <b>community-acquired pneumonia (CAP)</b> is an acute infection of the pulmonary parenchyma acquired outside the healthcare setting, classically producing lobar consolidation.`,
+`<span class="hl">Streptococcus pneumoniae</span> is the commonest cause. Others: Haemophilus influenzae and Moraxella catarrhalis (especially in COPD), Staphylococcus aureus (often post-influenza), and Klebsiella pneumoniae (alcoholics, diabetics — "currant-jelly" sputum, upper-lobe cavitation).`,
+`Acute onset of <b>fever with rigors</b>, productive cough with purulent or "rusty" sputum, <b>pleuritic chest pain</b>, dyspnoea, tachypnoea and tachycardia. The elderly may present atypically with confusion or falls.`,
+`Signs of consolidation: dullness to percussion, <b>bronchial breathing</b>, increased vocal fremitus/resonance and crackles. <span class="hl">CXR shows lobar consolidation</span> ± air bronchograms or effusion. Raised WCC/neutrophils, CRP and procalcitonin. Sputum Gram stain/culture, blood cultures, and urinary antigens (pneumococcal, Legionella). Assess severity with <b>CURB-65</b> — Confusion, Urea &gt;7 mmol/L, RR ≥30, BP &lt;90/60, age ≥65.`,
+`Risk-stratified <b>antibiotics</b> (covered fully in Topic 7): amoxicillin for low-severity outpatients; a β-lactam + macrolide or a respiratory fluoroquinolone for higher severity, guided by CURB-65. Add oxygen, fluids and VTE prophylaxis.`,
+`<b>Parapneumonic effusion / empyema</b>, lung abscess, respiratory failure, sepsis and septic shock, ARDS, metastatic infection (e.g. meningitis) and atrial fibrillation.`),
+quiz:[
+ {q:"Name the single commonest bacterial cause of CAP.",answer:"Streptococcus pneumoniae (the pneumococcus).",keywords:["streptococcus pneumoniae","pneumococcus","s. pneumoniae","strep pneumoniae"],minMatch:1},
+ {q:"List the five components of the CURB-65 score.",answer:"Confusion; Urea >7 mmol/L; Respiratory rate ≥30; Blood pressure <90 systolic or ≤60 diastolic; age ≥65.",keywords:["confusion","urea","respiratory rate","blood pressure","65","age"],minMatch:4},
+ {q:"Which organism classically causes upper-lobe cavitating pneumonia with 'currant-jelly' sputum in an alcoholic?",answer:"Klebsiella pneumoniae.",keywords:["klebsiella"],minMatch:1},
+ {q:"Which examination findings indicate consolidation?",answer:"Dullness to percussion, bronchial breathing, increased vocal fremitus/vocal resonance, and crackles over the affected zone.",keywords:["dull","bronchial breathing","vocal fremitus","vocal resonance","crackles"],minMatch:2}
+],
+flash:L(
+"Acute parenchymal lung infection acquired outside hospital; classically lobar.",
+"S. pneumoniae (commonest). H. influenzae/Moraxella (COPD), S. aureus (post-flu), Klebsiella (alcoholic, currant-jelly).",
+"Fever+rigors, purulent/rusty cough, pleuritic pain, dyspnoea, tachypnoea. Elderly → confusion.",
+"Consolidation signs + lobar CXR. ↑WCC/CRP/PCT. Sputum & blood cultures, urinary antigens. Score CURB-65.",
+"Risk-stratified antibiotics (see Tx): amoxicillin → β-lactam+macrolide / resp. fluoroquinolone. O2, fluids.",
+"Parapneumonic effusion/empyema, abscess, respiratory failure, sepsis, ARDS, AF.")
+},
+
+"pulm-5":{learn:L(
+`Non-bacterial CAP is pneumonia caused by <b>atypical bacteria</b> or <b>respiratory viruses</b>. "Atypical" denotes organisms that produce prominent extrapulmonary features, a non-lobar radiographic pattern and — importantly — <span class="hl">do not respond to β-lactams</span> (they are intracellular or lack a cell wall).`,
+`Atypical bacteria: <b>Mycoplasma pneumoniae</b> (young adults, epidemics), <b>Chlamydophila pneumoniae/psittaci</b> (birds), <b>Legionella pneumophila</b> (contaminated water/air-conditioning), Coxiella burnetii (Q fever). Viruses: influenza, RSV, adenovirus, parainfluenza, SARS-CoV-2 and human metapneumovirus.`,
+`More <b>gradual</b> onset with a dry cough and prominent constitutional symptoms (headache, myalgia, malaise, low-grade fever). Clues: <span class="hl">Mycoplasma</span> → cold agglutinins/haemolysis, erythema multiforme, bullous myringitis; <span class="hl">Legionella</span> → high fever, confusion, diarrhoea, hyponatraemia and deranged LFTs.`,
+`Characteristic <b>"clinico-radiological dissociation"</b> — CXR (patchy/interstitial infiltrates) looks worse than the clinical signs suggest. Confirm with PCR/serology, respiratory viral panels, <b>Legionella and pneumococcal urinary antigens</b>, and cold agglutinins for Mycoplasma.`,
+`<b>Macrolide</b> (azithromycin/clarithromycin), <b>doxycycline</b>, or a respiratory fluoroquinolone. Legionella → fluoroquinolone or macrolide. Viral pneumonia is largely supportive; add oseltamivir for influenza and antivirals for COVID where indicated. <span class="hl">β-lactams are ineffective against atypicals.</span>`,
+`Respiratory failure and ARDS; Mycoplasma extrapulmonary disease (autoimmune haemolytic anaemia, encephalitis/Guillain–Barré, myocarditis); and secondary bacterial infection.`),
+quiz:[
+ {q:"Why are β-lactam antibiotics ineffective against atypical pneumonia organisms?",answer:"Atypicals are intracellular or lack a peptidoglycan cell wall (e.g. Mycoplasma has no cell wall), so β-lactams, which target cell-wall synthesis, cannot work. Use macrolides, doxycycline or fluoroquinolones.",keywords:["cell wall","intracellular","no cell wall","peptidoglycan","β-lactam","beta-lactam"],minMatch:1},
+ {q:"An atypical pneumonia with confusion, diarrhoea, hyponatraemia and deranged LFTs suggests which organism?",answer:"Legionella pneumophila.",keywords:["legionella"],minMatch:1},
+ {q:"Name two antibiotic classes that cover atypical CAP.",answer:"Macrolides (azithromycin/clarithromycin) and tetracyclines (doxycycline); respiratory fluoroquinolones (e.g. levofloxacin) also work.",keywords:["macrolide","azithromycin","clarithromycin","doxycycline","tetracycline","fluoroquinolone","levofloxacin"],minMatch:2},
+ {q:"What haematological antibody is associated with Mycoplasma pneumoniae infection?",answer:"Cold agglutinins (IgM), which can cause cold autoimmune haemolytic anaemia.",keywords:["cold agglutinin","cold agglutinins"],minMatch:1}
+],
+flash:L(
+"CAP from atypical bacteria or viruses; extrapulmonary features, non-lobar CXR, β-lactam-resistant.",
+"Mycoplasma (young), Chlamydophila (birds), Legionella (water/AC), Coxiella. Viruses: flu, RSV, adeno, SARS-CoV-2.",
+"Gradual, dry cough, headache/myalgia. Mycoplasma→cold agglutinins, EM, myringitis. Legionella→confusion, diarrhoea, ↓Na.",
+"Clinico-radiological dissociation. PCR/serology, viral panel, Legionella & pneumococcal urinary antigen, cold agglutinins.",
+"Macrolide / doxycycline / respiratory fluoroquinolone. Legionella→FQ or macrolide. Viral=supportive+oseltamivir. NOT β-lactams.",
+"Respiratory failure, ARDS; Mycoplasma: AIHA, neuro (GBS/encephalitis), myocarditis.")
+},
+
+"pulm-6":{learn:L(
+`<b>Hospital-acquired pneumonia (HAP)</b> is pneumonia arising <span class="hl">≥48 h after admission</span> and not incubating at the time. <b>Ventilator-associated pneumonia (VAP)</b> occurs &gt;48 h after intubation. Pneumonia in the <b>immunocompromised</b> is caused by opportunistic organisms determined by the specific immune defect.`,
+`HAP/VAP: Gram-negatives — <span class="hl">Pseudomonas aeruginosa</span>, Klebsiella, E. coli, Acinetobacter, Enterobacter — and Staph aureus including <b>MRSA</b>; multidrug-resistant organisms are a key concern. Immunocompromised: neutropenia → bacteria, Aspergillus, Candida; <b>T-cell/HIV defects</b> → Pneumocystis jirovecii (PJP), CMV, TB, endemic fungi; hypogammaglobulinaemia → encapsulated bacteria.`,
+`New fever, purulent secretions, a new radiographic infiltrate, worsening oxygenation and leukocytosis. Presentations may be subtle when immunosuppressed. <b>PJP</b> is characteristic: subacute dyspnoea, dry cough and <span class="hl">hypoxia out of proportion</span> with exertional desaturation.`,
+`New CXR/CT infiltrate with sputum, tracheal aspirate or <b>BAL cultures</b> and blood cultures. In the immunocompromised: BAL for PJP (silver stain/PCR), serum <b>galactomannan</b> and β-D-glucan (fungal), CMV PCR. LDH is typically raised in PJP.`,
+`Prompt <b>empirical broad-spectrum antibiotics</b> guided by local resistance, covering Pseudomonas and MRSA when risk factors are present (e.g. piperacillin–tazobactam / cefepime / a carbapenem + vancomycin or linezolid ± an aminoglycoside), then <b>de-escalate</b> on culture results. <b>PJP</b>: high-dose <span class="hl">co-trimoxazole</span> plus adjunctive corticosteroids if PaO2 &lt;70 mmHg. Targeted antifungals for invasive fungal disease.`,
+`Respiratory failure, sepsis, empyema and — particularly with VAP and MDR organisms — high mortality.`),
+quiz:[
+ {q:"Define hospital-acquired pneumonia by timing.",answer:"Pneumonia developing ≥48 hours after hospital admission that was not incubating on admission. (VAP: >48h after intubation.)",keywords:["48","two days","admission"],minMatch:1},
+ {q:"Which two organisms must empirical HAP therapy typically cover when risk factors are present?",answer:"Pseudomonas aeruginosa and MRSA (Staphylococcus aureus).",keywords:["pseudomonas","mrsa","staph"],minMatch:2},
+ {q:"An HIV patient with a low CD4 count has subacute dry cough and hypoxia out of proportion to the CXR. Diagnosis and first-line treatment?",answer:"Pneumocystis jirovecii pneumonia (PJP). Treat with high-dose co-trimoxazole; add corticosteroids if PaO2 <70 mmHg (or A–a gradient >35).",keywords:["pneumocystis","pjp","pcp","co-trimoxazole","cotrimoxazole","trimethoprim","steroid"],minMatch:2},
+ {q:"Which serum test supports a diagnosis of invasive aspergillosis?",answer:"Serum (or BAL) galactomannan; β-D-glucan is also raised in many invasive fungal infections.",keywords:["galactomannan","beta-d-glucan","β-d-glucan","glucan"],minMatch:1}
+],
+flash:L(
+"HAP ≥48h after admission; VAP >48h after intubation; immunocompromised = defect-specific opportunists.",
+"HAP/VAP: Pseudomonas, Klebsiella, Acinetobacter, MRSA (MDR risk). Immuno: PJP, Aspergillus, CMV, TB, encapsulated.",
+"New fever, purulent secretions, new infiltrate, ↓oxygenation. PJP: subacute dyspnoea, dry cough, hypoxia out of proportion.",
+"CXR/CT + sputum/BAL & blood cultures. Immuno: BAL for PJP, galactomannan, β-D-glucan, CMV PCR, ↑LDH.",
+"Empirical broad-spectrum ±anti-Pseudomonas ±MRSA cover, then de-escalate. PJP: co-trimoxazole + steroids if PaO2<70.",
+"Respiratory failure, sepsis, empyema; high mortality (VAP/MDR).")
+},
+
+"pulm-7":{learn:L(
+`This topic covers the <b>principles of antibiotic and supportive treatment of pneumonia</b>, integrating severity assessment with the right regimen and duration.`,
+`Not applicable — this is a treatment topic. Approach: assess severity (<b>CURB-65 / CRB-65</b>, ICU criteria), start prompt empirical antibiotics, then narrow to targeted therapy. Add supportive care: oxygen, fluids, VTE prophylaxis, analgesia.`,
+`Not applicable — see the individual pneumonia topics for presentations.`,
+`Reassess response at <b>48–72 h</b>. If failing to improve, consider antibiotic resistance, a complication (empyema, abscess), or a wrong diagnosis (PE, malignancy, TB).`,
+`<b>CAP, low severity (CURB-65 0–1):</b> oral amoxicillin (doxycycline or a macrolide if penicillin-allergic). <b>Moderate (2):</b> amoxicillin + a macrolide (or doxycycline). <b>Severe (3–5 / ICU):</b> IV co-amoxiclav or ceftriaxone + a macrolide, or a respiratory fluoroquinolone — ensure Legionella cover. Add MRSA/Pseudomonas cover if risk factors. <span class="hl">Duration: usually 5 days</span> if improving; longer for Legionella, Staph or complications. <b>HAP/VAP:</b> broad-spectrum anti-pseudomonal ± MRSA cover, de-escalate on cultures (~7 days). <b>Aspiration:</b> cover anaerobes (co-amoxiclav or clindamycin). <b>PJP:</b> co-trimoxazole + steroids. <b>Prevention:</b> pneumococcal and influenza vaccination.`,
+`Failure of first-line therapy prompts a search for empyema, abscess, resistant organisms or an alternative diagnosis; complications otherwise mirror those of the underlying pneumonia.`),
+quiz:[
+ {q:"What is the typical antibiotic course length for uncomplicated CAP that is responding well?",answer:"About 5 days, provided the patient is improving and afebrile; longer courses are reserved for Legionella, S. aureus or complications.",keywords:["5","five"],minMatch:1},
+ {q:"First-line oral antibiotic for a low-severity (CURB-65 0–1) CAP outpatient?",answer:"Amoxicillin (a macrolide or doxycycline if penicillin-allergic).",keywords:["amoxicillin","amoxycillin"],minMatch:1},
+ {q:"You reassess CAP at 72h and the patient is not improving. List three things to consider.",answer:"Antibiotic resistance or inadequate cover; a complication (parapneumonic effusion/empyema or lung abscess); or a wrong diagnosis (PE, TB, malignancy, organising pneumonia).",keywords:["resistance","empyema","abscess","effusion","wrong diagnosis","pe","tb","malignancy","cancer"],minMatch:2},
+ {q:"Which antibiotics must a severe-CAP regimen include cover for, that low-severity oral amoxicillin misses?",answer:"Atypical organisms — especially Legionella — so add a macrolide, or use a respiratory fluoroquinolone.",keywords:["atypical","legionella","macrolide","fluoroquinolone"],minMatch:1}
+],
+flash:L(
+"Treatment topic: severity-guided empirical antibiotics + supportive care, then targeted therapy.",
+"n/a — principle: CURB-65/ICU criteria drive regimen choice.",
+"n/a — see individual pneumonia topics.",
+"Reassess at 48–72h. Non-response → resistance, empyema/abscess, or wrong diagnosis (PE/TB/cancer).",
+"Low: amoxicillin. Mod: amoxicillin+macrolide. Severe: co-amoxiclav/ceftriaxone+macrolide or resp. FQ (cover Legionella). CAP ~5d; HAP ~7d ±Pseudomonas/MRSA; aspiration=anaerobes; PJP=co-trimoxazole+steroid.",
+"Empyema, abscess, resistance, misdiagnosis; otherwise as per underlying pneumonia.")
+},
+
+"pulm-8":{learn:L(
+`Two suppurative lung conditions. <b>Bronchiectasis</b> is permanent, abnormal dilation of bronchi with destruction of their elastic and muscular walls, leading to chronic infection. <b>Lung abscess</b> is localised necrosis of lung parenchyma forming a pus-filled cavity.`,
+`<b>Bronchiectasis:</b> post-infective (childhood pneumonia, pertussis, TB, measles), cystic fibrosis, primary ciliary dyskinesia (Kartagener), immunodeficiency, ABPA, bronchial obstruction, connective-tissue disease, or idiopathic. <b>Abscess:</b> <span class="hl">aspiration of anaerobes</span> (poor dentition, alcohol, reduced consciousness) is commonest; also secondary to pneumonia (Staph, Klebsiella), septic emboli or obstructing tumour.`,
+`<b>Bronchiectasis:</b> chronic cough with <span class="hl">copious purulent sputum</span>, recurrent infections, haemoptysis, dyspnoea; coarse crackles and clubbing. <b>Abscess:</b> swinging fever, cough with large amounts of foul/purulent sputum, haemoptysis, night sweats and weight loss.`,
+`<b>Bronchiectasis:</b> <span class="hl">HRCT is the gold standard</span> — dilated, non-tapering bronchi (signet-ring sign, tram-track lines). Sputum culture (including Pseudomonas and non-tuberculous mycobacteria) and workup for cause (CF sweat test/genetics, immunoglobulins, ciliary studies, Aspergillus serology). <b>Abscess:</b> CXR/CT shows a <b>cavity with an air-fluid level</b>; sputum and blood cultures; bronchoscopy if obstruction/tumour is suspected.`,
+`<b>Bronchiectasis:</b> airway clearance/physiotherapy, prompt antibiotics for exacerbations (guided by sputum), long-term macrolides in frequent exacerbators, bronchodilators, treat the underlying cause, vaccinate; surgery or bronchial-artery embolisation for localised disease or massive haemoptysis. <b>Abscess:</b> <span class="hl">prolonged antibiotics</span> (weeks) covering anaerobes (co-amoxiclav or clindamycin) with postural drainage; percutaneous/surgical drainage if not resolving.`,
+`Bronchiectasis: recurrent infection, massive haemoptysis, respiratory failure, cor pulmonale, secondary (AA) amyloidosis, chronic Pseudomonas colonisation. Abscess: empyema, bronchopleural fistula, haemoptysis, sepsis and metastatic (e.g. brain) abscess.`),
+quiz:[
+ {q:"What is the gold-standard imaging investigation for bronchiectasis and one classic sign it shows?",answer:"High-resolution CT (HRCT); classic signs include the signet-ring sign, tram-track lines and non-tapering dilated bronchi.",keywords:["hrct","high-resolution ct","high resolution","signet","tram-track","tram track"],minMatch:1},
+ {q:"What is the commonest mechanism and organism group causing lung abscess?",answer:"Aspiration — most abscesses follow aspiration of oropharyngeal anaerobes (risk: poor dentition, alcohol, reduced consciousness).",keywords:["aspiration","anaerobe","anaerobes"],minMatch:1},
+ {q:"What CXR/CT finding is characteristic of a lung abscess?",answer:"A cavity containing an air-fluid level.",keywords:["cavity","air-fluid","air fluid","fluid level"],minMatch:1},
+ {q:"Give two inherited causes of bronchiectasis.",answer:"Cystic fibrosis and primary ciliary dyskinesia (Kartagener syndrome). (Immunodeficiencies also predispose.)",keywords:["cystic fibrosis","ciliary","kartagener","immunodeficiency"],minMatch:1}
+],
+flash:L(
+"Bronchiectasis = permanent bronchial dilation + chronic infection. Abscess = necrotic pus-filled lung cavity.",
+"Bronchiectasis: post-infective, CF, ciliary dyskinesia, ABPA, immunodef, obstruction. Abscess: aspiration of anaerobes (commonest).",
+"Bronchiectasis: chronic copious purulent sputum, recurrent infection, haemoptysis, clubbing. Abscess: swinging fever, foul sputum, weight loss.",
+"Bronchiectasis: HRCT (signet-ring, tram-track) + sputum culture + cause workup. Abscess: cavity with air-fluid level on CXR/CT.",
+"Bronchiectasis: physio, exacerbation abx, long-term macrolide, treat cause; embolise massive haemoptysis. Abscess: weeks of anaerobic cover + drainage.",
+"Bronchiectasis: haemoptysis, cor pulmonale, amyloidosis, Pseudomonas. Abscess: empyema, bronchopleural fistula, brain abscess.")
+},
+
+"pulm-9":{learn:L(
+`A pleural effusion is an abnormal accumulation of fluid in the pleural space. The central task is to classify it as a <b>transudate</b> or an <b>exudate</b>, which directs the differential.`,
+`Distinguished by <span class="hl">Light's criteria</span> — the fluid is an <b>exudate</b> if any one holds: pleural/serum protein &gt;0.5, pleural/serum LDH &gt;0.6, or pleural LDH &gt;2/3 of the upper limit of normal serum LDH. <b>Transudates</b> (low protein): heart failure, cirrhosis, nephrotic syndrome, hypoalbuminaemia, constrictive pericarditis. <b>Exudates</b> (high protein): pneumonia (parapneumonic), malignancy, TB, pulmonary embolism, pancreatitis, connective-tissue disease, empyema, chylothorax.`,
+`Dyspnoea, pleuritic pain and dry cough. Signs over the effusion: reduced chest expansion, <span class="hl">stony-dull percussion</span>, diminished or absent breath sounds and vocal fremitus, and tracheal deviation away from a large effusion.`,
+`CXR: blunting of the costophrenic angle with a meniscus (≈200–300 mL needed on a PA film). <b>Ultrasound</b> is sensitive and guides aspiration; CT characterises. <b>Diagnostic thoracocentesis</b>: send protein, LDH, pH, glucose, cytology, Gram stain/culture, cell count, adenosine deaminase (TB), amylase and triglycerides. A parapneumonic effusion with <span class="hl">pH &lt;7.2</span> needs drainage.`,
+`Treat the cause. Therapeutic aspiration relieves symptoms. A <b>chest drain</b> is required for empyema or complicated parapneumonic effusion (pH &lt;7.2, pus or organisms). For recurrent malignant effusions: pleurodesis or an indwelling pleural catheter.`,
+`Empyema, trapped ("unexpandable") lung, respiratory compromise, and re-expansion pulmonary oedema after rapid drainage of a large effusion.`),
+quiz:[
+ {q:"State Light's criteria for an exudative pleural effusion.",answer:"Exudate if ANY one: pleural/serum protein >0.5, pleural/serum LDH >0.6, or pleural LDH >two-thirds of the upper limit of normal serum LDH.",keywords:["protein","0.5","ldh","0.6","two-thirds","2/3"],minMatch:2},
+ {q:"Give two common causes each of a transudate and an exudate.",answer:"Transudate: heart failure, cirrhosis, nephrotic syndrome, hypoalbuminaemia. Exudate: pneumonia, malignancy, TB, PE, pancreatitis.",keywords:["heart failure","cirrhosis","nephrotic","pneumonia","malignancy","cancer","tb","tuberculosis","pancreatitis","pe","embolism"],minMatch:2},
+ {q:"A parapneumonic effusion has pleural fluid pH 7.05. What does this indicate you should do?",answer:"pH <7.2 indicates a complicated parapneumonic effusion/empyema requiring chest-tube drainage (plus antibiotics).",keywords:["drain","chest drain","chest tube","tube","drainage"],minMatch:1},
+ {q:"What are the percussion note and breath sounds over a pleural effusion?",answer:"Stony-dull percussion note with reduced/absent breath sounds and reduced vocal fremitus.",keywords:["stony dull","stony-dull","dull","reduced breath","absent breath","reduced fremitus"],minMatch:1}
+],
+flash:L(
+"Abnormal pleural-space fluid; classify transudate vs exudate to find the cause.",
+"Light's criteria (exudate: prot ratio>0.5, LDH ratio>0.6, or LDH>⅔ ULN). Transudate: HF, cirrhosis, nephrotic. Exudate: pneumonia, cancer, TB, PE.",
+"Dyspnoea, pleuritic pain, dry cough. Stony-dull percussion, ↓breath sounds & fremitus, tracheal shift if large.",
+"CXR meniscus (need ~200mL), US guides tap, CT. Thoracocentesis: protein, LDH, pH, glucose, cytology, culture, ADA. pH<7.2=drain.",
+"Treat cause; therapeutic aspiration; chest drain for empyema/complicated (pH<7.2/pus). Recurrent malignant: pleurodesis/IPC.",
+"Empyema, trapped lung, re-expansion pulmonary oedema.")
+},
+
+"pulm-10":{learn:L(
+`Pulmonary tuberculosis is a chronic <b>granulomatous</b> infection caused by <span class="hl">Mycobacterium tuberculosis</span>, primarily affecting the lungs. It is classified as latent vs active, and primary vs post-primary (reactivation).`,
+`Spread by <b>airborne droplet nuclei</b>. Risk factors: HIV and other immunosuppression, malnutrition, overcrowding, diabetes and silicosis. Primary infection forms a Ghon focus/complex; post-primary disease is reactivation, classically in the <b>lung apices</b>.`,
+`Chronic <b>cough &gt;2–3 weeks</b>, haemoptysis, and constitutional symptoms: <span class="hl">fever, drenching night sweats, weight loss</span>, anorexia and fatigue.`,
+`<b>Sputum smear</b> for acid-fast bacilli (Ziehl–Neelsen) ×3, and <b>sputum culture</b> (Löwenstein–Jensen — the gold standard but takes weeks). <span class="hl">NAAT/GeneXpert MTB/RIF</span> gives a rapid result and detects rifampicin resistance. CXR: upper-lobe infiltrates/cavitation, hilar lymphadenopathy (primary), or a miliary pattern. Latent infection: tuberculin (Mantoux) skin test or IGRA. Always test for HIV.`,
+`Standard 6-month regimen: <span class="hl">2 months RIPE</span> — Rifampicin, Isoniazid, Pyrazinamide, Ethambutol (intensive phase) — then <span class="hl">4 months of Rifampicin + Isoniazid</span> (continuation). Give <b>pyridoxine</b> with isoniazid to prevent neuropathy, monitor LFTs, and use directly-observed therapy where indicated. Notify public health and undertake contact tracing. MDR-TB requires prolonged second-line therapy.`,
+`Massive haemoptysis (Rasmussen aneurysm), pleural effusion/empyema, pneumothorax, bronchiectasis and fibrosis, <b>aspergilloma</b> in an old cavity, cor pulmonale, dissemination (miliary TB, TB meningitis), and drug toxicity — hepatotoxicity, ethambutol optic neuritis and isoniazid peripheral neuropathy.`),
+quiz:[
+ {q:"Name the four first-line drugs of the intensive phase of TB treatment and the standard total duration.",answer:"Rifampicin, Isoniazid, Pyrazinamide, Ethambutol (RIPE) for 2 months, then Rifampicin + Isoniazid for 4 months — 6 months total.",keywords:["rifampicin","isoniazid","pyrazinamide","ethambutol","6 month","six month"],minMatch:4},
+ {q:"Which vitamin is co-prescribed with isoniazid and why?",answer:"Pyridoxine (vitamin B6) — to prevent isoniazid-induced peripheral neuropathy.",keywords:["pyridoxine","b6","vitamin b6","neuropathy"],minMatch:1},
+ {q:"What rapid molecular test diagnoses TB and simultaneously detects rifampicin resistance?",answer:"NAAT — GeneXpert MTB/RIF.",keywords:["genexpert","xpert","naat","mtb/rif","nucleic acid"],minMatch:1},
+ {q:"Which serious ocular side-effect is associated with ethambutol?",answer:"Optic neuritis — causing reduced visual acuity and red-green colour blindness (dose-related, usually reversible if stopped early).",keywords:["optic neuritis","optic","visual","colour blindness","color blindness","vision"],minMatch:1}
+],
+flash:L(
+"Chronic granulomatous infection by M. tuberculosis; latent vs active, primary vs post-primary (apical).",
+"Airborne droplet nuclei. Risk: HIV, immunosuppression, malnutrition, crowding, diabetes, silicosis.",
+"Cough >2–3wk, haemoptysis, fever, night sweats, weight loss, anorexia.",
+"Sputum AFB smear (ZN) ×3 + culture (LJ, gold std) + GeneXpert (rapid, RIF resistance). CXR apical cavitation. Mantoux/IGRA for latent. Test HIV.",
+"2mo RIPE → 4mo RH (6mo total). Pyridoxine w/ isoniazid. Monitor LFTs. Notify + contact trace. MDR→2nd-line.",
+"Massive haemoptysis, effusion, pneumothorax, bronchiectasis, aspergilloma, miliary/meningitis, drug toxicity (hepatitis, ethambutol optic neuritis, INH neuropathy).")
+},
+
+"pulm-11":{learn:L(
+`Pulmonary embolism (PE) is occlusion of the pulmonary artery or its branches, usually by <b>thrombus embolising from a deep vein thrombosis</b> (rarely fat, air or amniotic fluid). It is part of the venous thromboembolism (VTE) spectrum.`,
+`Risk relates to <b>Virchow's triad</b>: stasis (immobility, surgery, long-haul travel), hypercoagulability (malignancy, pregnancy, oestrogen therapy, thrombophilia, nephrotic syndrome) and endothelial injury. Prior VTE is a strong predictor.`,
+`Acute dyspnoea, <b>pleuritic chest pain</b>, tachypnoea, tachycardia, haemoptysis and syncope. <span class="hl">Massive (high-risk) PE</span> causes hypotension, shock, right-ventricular failure and cyanosis. Look for signs of DVT (unilateral leg swelling).`,
+`Assess pre-test probability (<b>Wells score</b>). A high-sensitivity <b>D-dimer</b> excludes PE when probability is low. <span class="hl">CT pulmonary angiography is the diagnostic gold standard</span> (V/Q scan if contrast contraindicated). ECG: sinus tachycardia (commonest) or the classic <b>S1Q3T3</b> and RV strain. ABG: hypoxaemia with hypocapnia and a raised A–a gradient. Echocardiography and troponin/BNP stratify severity; leg Doppler for DVT.`,
+`<b>Anticoagulation</b> — a DOAC (apixaban/rivaroxaban) is first-line, or LMWH bridging to warfarin. For massive/high-risk PE with haemodynamic instability: <span class="hl">thrombolysis (alteplase)</span>, or catheter-directed therapy/embolectomy. An IVC filter is used only if anticoagulation is contraindicated. Give oxygen and supportive care. Duration ≥3 months, extended/indefinite if unprovoked, recurrent or cancer-associated.`,
+`Sudden death, RV failure and cardiogenic shock, recurrence, <b>chronic thromboembolic pulmonary hypertension (CTEPH)</b>, pulmonary infarction, and bleeding from anticoagulation.`),
+quiz:[
+ {q:"What is the gold-standard imaging test to diagnose PE?",answer:"CT pulmonary angiography (CTPA). A V/Q scan is the alternative when iodinated contrast is contraindicated.",keywords:["ctpa","ct pulmonary angiography","ct angiography","pulmonary angiography"],minMatch:1},
+ {q:"Name the classic (though insensitive) ECG pattern of PE and the most common ECG finding.",answer:"Classic pattern: S1Q3T3. Most common finding: sinus tachycardia.",keywords:["s1q3t3","sinus tachycardia","tachycardia"],minMatch:1},
+ {q:"A patient has a PE with sustained hypotension (systolic 80). Beyond anticoagulation, what is the key treatment?",answer:"Systemic thrombolysis (e.g. alteplase) for high-risk/massive PE — or catheter-directed thrombolysis/embolectomy if thrombolysis is contraindicated.",keywords:["thrombolysis","thrombolytic","alteplase","tpa","embolectomy"],minMatch:1},
+ {q:"What is first-line anticoagulation for most haemodynamically stable PEs?",answer:"A DOAC such as apixaban or rivaroxaban (LMWH-to-warfarin is an alternative).",keywords:["doac","apixaban","rivaroxaban","noac","lmwh","warfarin"],minMatch:1}
+],
+flash:L(
+"Occlusion of pulmonary arteries, usually by thrombus from a DVT (VTE spectrum).",
+"Virchow's triad: stasis (immobility/surgery/travel), hypercoagulability (cancer, pregnancy, oestrogen, thrombophilia), endothelial injury.",
+"Acute dyspnoea, pleuritic pain, tachypnoea, tachycardia, haemoptysis, syncope. Massive→hypotension/shock/RV failure.",
+"Wells score → D-dimer (rule out if low prob) → CTPA (gold std; V/Q if contrast CI). ECG: sinus tachy / S1Q3T3. ABG: ↓O2 ↓CO2.",
+"DOAC first-line (or LMWH→warfarin). Massive: thrombolysis (alteplase)/embolectomy. IVC filter if anticoag CI. ≥3 months.",
+"Sudden death, RV failure/shock, recurrence, CTEPH, infarction, anticoagulant bleeding.")
+},
+
+"pulm-12":{learn:L(
+`Diffuse parenchymal lung disease (interstitial lung disease, ILD) is a heterogeneous group of disorders affecting the lung <b>interstitium</b> (alveolar walls), producing inflammation and/or fibrosis. The functional hallmark is a <span class="hl">restrictive pattern</span> with impaired gas transfer.`,
+`<b>Known cause:</b> occupational/environmental (pneumoconioses — asbestosis, silicosis, coal-worker's), hypersensitivity pneumonitis, drugs (<span class="hl">amiodarone, methotrexate, nitrofurantoin, bleomycin</span>), radiation, and connective-tissue disease (RA, systemic sclerosis, SLE, myositis). <b>Idiopathic interstitial pneumonias</b> — chiefly <b>IPF</b> (UIP pattern) and NSIP. <b>Granulomatous:</b> sarcoidosis.`,
+`Progressive <b>exertional dyspnoea</b> and a dry cough with fatigue. Signs: fine bibasal <span class="hl">"Velcro" inspiratory crackles</span>, clubbing (especially IPF), features of any underlying connective-tissue disease, and later cyanosis and cor pulmonale.`,
+`<b>HRCT</b> defines the pattern — UIP shows basal, subpleural reticulation with <b>honeycombing</b> and traction bronchiectasis. PFTs: <span class="hl">restrictive</span> (reduced FVC and TLC, preserved or increased FEV1/FVC ratio) with a <b>reduced DLCO</b> and exertional desaturation. Add autoimmune serology and precipitins; BAL or lung biopsy where needed.`,
+`Treat the cause and remove any exposure. In <b>IPF</b>, antifibrotics (<span class="hl">pirfenidone, nintedanib</span>) slow decline and <b>steroids are unhelpful/harmful</b>; by contrast, inflammatory/CTD-related ILD, sarcoidosis and hypersensitivity pneumonitis are treated with corticosteroids ± immunosuppression. Add oxygen, pulmonary rehabilitation, vaccination and consider lung transplantation.`,
+`Respiratory failure, pulmonary hypertension and cor pulmonale, acute exacerbations (notably in IPF), increased lung-cancer risk and pneumothorax.`),
+quiz:[
+ {q:"What pattern do pulmonary function tests show in ILD (name the pattern and what happens to FEV1/FVC and DLCO)?",answer:"A restrictive pattern: reduced FVC and TLC with a preserved or increased FEV1/FVC ratio, and a reduced DLCO (gas-transfer factor).",keywords:["restrictive","dlco reduced","reduced dlco","fvc","tlc","preserved ratio","increased ratio"],minMatch:2},
+ {q:"Name the two antifibrotic drugs used in idiopathic pulmonary fibrosis.",answer:"Pirfenidone and nintedanib.",keywords:["pirfenidone","nintedanib"],minMatch:2},
+ {q:"Why should you avoid high-dose corticosteroids as primary therapy in IPF?",answer:"Steroids are not effective in IPF and may cause harm (e.g. the PANTHER-IPF signal of increased harm with immunosuppression); IPF is fibrotic rather than inflammatory. Steroids are used in inflammatory/CTD-ILD, sarcoid and hypersensitivity pneumonitis instead.",keywords:["not effective","ineffective","harm","fibrotic","no benefit"],minMatch:1},
+ {q:"Name three drugs that can cause interstitial lung disease.",answer:"Amiodarone, methotrexate, nitrofurantoin, bleomycin (any three).",keywords:["amiodarone","methotrexate","nitrofurantoin","bleomycin"],minMatch:3}
+],
+flash:L(
+"Heterogeneous interstitial (alveolar-wall) inflammation/fibrosis → restrictive physiology, impaired gas transfer.",
+"Known: pneumoconioses, hypersensitivity pneumonitis, drugs (amiodarone/MTX/nitrofurantoin/bleomycin), radiation, CTD. Idiopathic: IPF (UIP), NSIP. Granulomatous: sarcoid.",
+"Progressive exertional dyspnoea, dry cough, fine bibasal Velcro crackles, clubbing (IPF), later cor pulmonale.",
+"HRCT (UIP: basal subpleural reticulation, honeycombing). PFTs restrictive: ↓FVC/TLC, ↑ratio, ↓DLCO. Serology, ±biopsy.",
+"Treat cause/remove exposure. IPF: antifibrotics (pirfenidone, nintedanib); steroids NOT helpful. CTD/sarcoid/HP: steroids±immunosuppression. O2, rehab, transplant.",
+"Respiratory failure, pulmonary hypertension/cor pulmonale, acute exacerbations (IPF), lung cancer, pneumothorax.")
+}
+};
+</script>
+<script>
+/* ============================================================
+   APP ENGINE
+   ============================================================ */
+const STORE_KEY='mu_sofia_im_progress_v1';
+const THEME_KEY='mu_sofia_im_theme';
+
+/* Build a flat topic index across all sections, numbered 1..170 */
+const TOPICS=[];
+let n=0;
+SECTIONS.forEach(sec=>{
+  TITLES[sec.id].forEach((title,i)=>{
+    n++;
+    const localId=i+1;
+    const key=sec.id+'-'+localId;
+    TOPICS.push({
+      globalNum:n, section:sec.id, sectionName:sec.name, roman:sec.roman,
+      localId, key, title,
+      content: CONTENT[key]||null
+    });
+  });
+});
+
+/* ---------- progress state ---------- */
+let progress=loadProgress();
+function loadProgress(){try{return JSON.parse(localStorage.getItem(STORE_KEY))||{}}catch(e){return{}}}
+function saveProgress(){try{localStorage.setItem(STORE_KEY,JSON.stringify(progress))}catch(e){}}
+function getP(key){return progress[key]||{learned:false,mastered:false,quiz:null}}
+function setP(key,patch){progress[key]=Object.assign(getP(key),patch);saveProgress();refreshStatusUI()}
+
+/* status: notstarted | learning | tested | mastered */
+function topicStatus(key){
+  const p=getP(key);
+  if(p.mastered)return'mastered';
+  if(p.quiz)return'tested';
+  if(p.learned)return'learning';
+  return'notstarted';
+}
+
+/* ---------- theme ---------- */
+function initTheme(){
+  const t=localStorage.getItem(THEME_KEY)||'light';
+  document.documentElement.setAttribute('data-theme',t);
+}
+document.getElementById('themeBtn').onclick=()=>{
+  const cur=document.documentElement.getAttribute('data-theme');
+  const nx=cur==='light'?'dark':'light';
+  document.documentElement.setAttribute('data-theme',nx);
+  localStorage.setItem(THEME_KEY,nx);
+};
+
+/* ---------- toast ---------- */
+let toastT;
+function toast(msg){
+  const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');
+  clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2200);
+}
+
+/* ---------- routing ---------- */
+let currentKey=null;   // topic key or null for dashboard
+let currentMode='learn';
+let route='topic'; /* 'dashboard' | 'progress' | 'topic' */
+
+function go(key,mode){
+  route = key ? 'topic' : 'dashboard';
+  currentKey=key; currentMode=mode||'learn';
+  if(key){
+    const t=byKey(key);
+    if(t.content && currentMode==='learn') setP(key,{learned:true});
+  }
+  render();
+  document.getElementById('main').scrollTop=0;
+  closeSidebar();
+  refreshStatusUI();
+}
+function goProgress(){
+  route='progress'; currentKey=null;
+  render();
+  document.getElementById('main').scrollTop=0;
+  closeSidebar();
+  refreshStatusUI();
+}
+function byKey(key){return TOPICS.find(t=>t.key===key)}
+
+/* ---------- reset ---------- */
+function resetTopic(key){
+  const t=byKey(key);
+  if(!confirm('Reset all progress for this topic?\n\n“'+t.title+'”\n\nThis clears its read / tested / mastered status and quiz score.'))return;
+  delete progress[key];
+  saveProgress();
+  buildNav(document.getElementById('search').value);
+  render();
+  refreshStatusUI();
+  toast('Topic reset');
+}
+function resetAll(){
+  if(!confirm('Reset ALL progress for every topic?\n\nThis erases every read / tested / mastered mark and cannot be undone. Use Backup first if you might want it back.'))return;
+  progress={};
+  saveProgress();
+  buildNav(document.getElementById('search').value);
+  render();
+  refreshStatusUI();
+  toast('All progress reset');
+}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+const collapsed={};
+function buildNav(filter){
+  const nav=document.getElementById('nav');nav.innerHTML='';
+  filter=(filter||'').trim().toLowerCase();
+  SECTIONS.forEach(sec=>{
+    const secTopics=TOPICS.filter(t=>t.section===sec.id);
+    const matches=filter? secTopics.filter(t=>t.title.toLowerCase().includes(filter)):secTopics;
+    if(filter && matches.length===0)return;
+    const avail=secTopics.filter(t=>t.content).length;
+
+    const head=document.createElement('button');
+    head.className='sec-head'+((collapsed[sec.id]&&!filter)?' sec-collapsed':'');
+    head.innerHTML=`<span class="sec-roman">${sec.roman}</span>
+      <span class="sec-name">${sec.name}</span>
+      <span class="sec-count">${avail}/${secTopics.length}</span>
+      <span class="sec-chev">▼</span>`;
+    const list=document.createElement('div');list.className='topic-list';
+    head.onclick=()=>{collapsed[sec.id]=!collapsed[sec.id];buildNav(document.getElementById('search').value)};
+
+    (filter?matches:secTopics).forEach(t=>{
+      const item=document.createElement('button');
+      item.className='topic-item'+(t.key===currentKey?' active':'')+(t.content?'':' locked');
+      item.dataset.key=t.key;
+      const st=topicStatus(t.key);
+      item.innerHTML=`<span class="topic-num">${t.globalNum}</span>
+        <span class="dot ${st}"></span>
+        <span class="topic-txt">${t.title}</span>
+        ${t.content?'':'<span class="lock">soon</span>'}`;
+      item.onclick=()=>go(t.key,'learn');
+      list.appendChild(item);
+    });
+    nav.appendChild(head);
+    if(!(collapsed[sec.id]&&!filter)) nav.appendChild(list);
+    else nav.appendChild(list);
+  });
+}
+document.getElementById('search').oninput=e=>buildNav(e.target.value);
+
+function refreshStatusUI(){
+  /* update dots + active state without full rebuild */
+  document.querySelectorAll('.topic-item').forEach(el=>{
+    const key=el.dataset.key;
+    el.classList.toggle('active',key===currentKey);
+    const dot=el.querySelector('.dot');
+    if(dot)dot.className='dot '+topicStatus(key);
+  });
+  updateMiniProgress();
+}
+
+function updateMiniProgress(){
+  const avail=TOPICS.filter(t=>t.content);
+  const mastered=avail.filter(t=>getP(t.key).mastered).length;
+  const pct=avail.length?Math.round(mastered/avail.length*100):0;
+  document.getElementById('miniBar').style.width=pct+'%';
+  document.getElementById('miniPct').textContent=pct+'%';
+}
+
+/* mobile drawer */
+function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('backdrop').classList.add('show')}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('backdrop').classList.remove('show')}
+document.getElementById('menuToggle').onclick=openSidebar;
+document.getElementById('backdrop').onclick=closeSidebar;
+document.getElementById('miniProgress').onclick=goProgress;
+/* ============================================================
+   RENDER
+   ============================================================ */
+const view=document.getElementById('view');
+const crumb=document.getElementById('crumb');
+
+function render(){
+  if(route==='progress'){renderProgress();return}
+  if(!currentKey){renderDashboard();return}
+  const t=byKey(currentKey);
+  crumb.innerHTML=`${t.roman} · ${t.sectionName} &nbsp;›&nbsp; <b>${t.globalNum}. ${t.title}</b>`;
+  if(!t.content){renderComing(t);return}
+  renderTopic(t);
+}
+
+/* ---------- Dashboard ---------- */
+function renderDashboard(){
+  crumb.innerHTML='Dashboard';
+  const avail=TOPICS.filter(t=>t.content);
+  const learned=avail.filter(t=>getP(t.key).learned).length;
+  const tested=avail.filter(t=>getP(t.key).quiz).length;
+  const mastered=avail.filter(t=>getP(t.key).mastered).length;
+
+  /* continue = first available topic not mastered */
+  const next=avail.find(t=>!getP(t.key).mastered)||avail[0];
+
+  /* weak topics: quiz best < 60% */
+  const weak=avail.filter(t=>{const q=getP(t.key).quiz;return q&&q.total&&(q.correct/q.total)<0.6});
+
+  let secRows='';
+  SECTIONS.forEach(sec=>{
+    const st=TOPICS.filter(t=>t.section===sec.id);
+    const a=st.filter(t=>t.content);
+    const m=a.filter(t=>getP(t.key).mastered).length;
+    const pct=a.length?Math.round(m/a.length*100):0;
+    const disabled=a.length===0;
+    secRows+=`<div class="row" ${disabled?'style="opacity:.55;cursor:default"':`onclick="go('${st[0].key}','learn')"`}>
+      <span class="rn">${sec.roman}</span>
+      <span class="nm">${sec.name}</span>
+      <span class="bar"><i style="width:${pct}%"></i></span>
+      <span class="pct">${a.length?pct+'%':'soon'}</span>
+    </div>`;
+  });
+
+  view.innerHTML=`
+  <div class="hero">
+    <div class="eyebrow">Medical University of Sofia · Internal Medicine</div>
+    <h2>Your revision dashboard</h2>
+    <p>Work through each topic in three steps — <b>Learn</b> the full clinical picture, <b>Test</b> yourself with typed answers, then drill the <b>Flashcards</b> before the exam. Progress saves automatically in this browser.</p>
+  </div>
+  <div class="continue-card">
+    <div>
+      <div class="lab">Continue studying</div>
+      <h3>${next.globalNum}. ${next.title}</h3>
+    </div>
+    <button onclick="go('${next.key}','learn')">Open topic →</button>
+  </div>
+  <div class="stat-row">
+    <div class="stat"><div class="n">${learned}</div><div class="l">Topics read (of ${avail.length} available)</div></div>
+    <div class="stat"><div class="n">${tested}</div><div class="l">Topics self-tested</div></div>
+    <div class="stat"><div class="n">${mastered}</div><div class="l">Topics mastered</div></div>
+  </div>
+  <div style="margin:2px 0 26px">
+    <button class="btn-primary" onclick="goProgress()">View full progress tracker →</button>
+  </div>
+  ${weak.length?`<div class="section-title">Needs review</div>
+    <div class="sec-progress">${weak.map(t=>{const q=getP(t.key).quiz;return`<div class="row" onclick="go('${t.key}','test')">
+      <span class="rn">${t.globalNum}</span><span class="nm">${t.title}</span>
+      <span class="pct" style="color:var(--incorrect)">${q.correct}/${q.total}</span></div>`}).join('')}</div>`:''}
+  <div class="section-title">Progress by section</div>
+  <div class="sec-progress">${secRows}</div>
+  <p style="color:var(--muted);font-size:12.5px;margin-top:22px">Content is being added section by section. <b>Section I — Pulmonary Diseases</b> is fully loaded (12 topics); the remaining sections show titles and will be filled in next. Use <b>Backup</b> to save your progress to a file you can restore on any device.</p>
+  `;
+  updateMiniProgress();
+}
+
+/* ---------- Progress tracker ---------- */
+function renderProgress(){
+  crumb.innerHTML='<b>Progress tracker</b>';
+  const avail=TOPICS.filter(t=>t.content);
+  const learned=avail.filter(t=>getP(t.key).learned).length;
+  const tested=avail.filter(t=>getP(t.key).quiz).length;
+  const mastered=avail.filter(t=>getP(t.key).mastered).length;
+  const pct=avail.length?Math.round(mastered/avail.length*100):0;
+
+  let sections='';
+  SECTIONS.forEach(sec=>{
+    const st=TOPICS.filter(t=>t.section===sec.id);
+    const a=st.filter(t=>t.content);
+    const m=a.filter(t=>getP(t.key).mastered).length;
+    const spct=a.length?Math.round(m/a.length*100):0;
+    const rows=st.map(t=>{
+      const status=topicStatus(t.key);
+      const q=getP(t.key).quiz;
+      const hasProg=status!=='notstarted';
+      let badge;
+      if(!t.content) badge='<span class="pbadge soon">Coming soon</span>';
+      else if(status==='mastered') badge='<span class="pbadge mastered">✓ Mastered</span>';
+      else if(status==='tested') badge=`<span class="pbadge tested">Tested · ${q.correct}/${q.total}</span>`;
+      else if(status==='learning') badge='<span class="pbadge learning">Reading</span>';
+      else badge='<span class="pbadge none">Not started</span>';
+      return `<div class="prow ${t.content?'':'locked'}">
+        <span class="pnum">${t.globalNum}</span>
+        <span class="dot ${status}"></span>
+        <span class="pname" ${t.content?`onclick="go('${t.key}','learn')"`:''}>${t.title}</span>
+        ${badge}
+        ${(t.content&&hasProg)?`<button class="preset" title="Reset this topic" onclick="resetTopic('${t.key}')">↺</button>`:'<span class="preset-spacer"></span>'}
+      </div>`;
+    }).join('');
+    sections+=`<div class="psec">
+      <div class="psec-head">
+        <span class="rn">${sec.roman}</span>
+        <span class="psec-name">${sec.name}</span>
+        <span class="bar"><i style="width:${spct}%"></i></span>
+        <span class="pct">${a.length? m+'/'+a.length : 'soon'}</span>
+      </div>${rows}</div>`;
+  });
+
+  view.innerHTML=`
+  <div class="hero">
+    <div class="eyebrow">Progress tracker</div>
+    <h2>Every topic, at a glance</h2>
+    <p>You've mastered <b>${mastered} of ${avail.length}</b> available topics so far. Tap any topic to jump in, or reset one to start it fresh.</p>
+  </div>
+  <div class="overall">
+    <div class="overall-ring" style="--p:${pct}">
+      <div class="overall-num">${pct}%</div>
+      <div class="overall-lab">mastered</div>
+    </div>
+    <div class="overall-stats">
+      <div><b>${learned}</b><span>read</span></div>
+      <div><b>${tested}</b><span>tested</span></div>
+      <div><b>${mastered}</b><span>mastered</span></div>
+      <div><b>${avail.length}</b><span>available</span></div>
+    </div>
+  </div>
+  <div class="progress-actions">
+    <button class="btn-ghost" onclick="go(null)">← Dashboard</button>
+    <button class="btn-ghost btn-reset" onclick="resetAll()">↺ Reset all progress</button>
+  </div>
+  ${sections}`;
+  updateMiniProgress();
+}
+
+/* ---------- Coming soon ---------- */
+function renderComing(t){
+  view.innerHTML=`<div class="topic-header">
+    <span class="tag">${t.roman} · ${t.sectionName}</span>
+    <h2>${t.globalNum}. ${t.title}</h2></div>
+    <div class="coming"><div class="ic">🩺</div>
+    <h3>Content coming in the next batch</h3>
+    <p>This topic's full teaching notes, quiz and flashcards haven't been written yet. Section I (Pulmonary) is complete — the other sections are being added one at a time so every topic stays exam-accurate.</p>
+    <div class="learn-actions" style="justify-content:center;margin-top:24px">
+      <button class="btn-primary" onclick="go(null)">← Back to dashboard</button></div></div>`;
+}
+
+/* ---------- Topic view ---------- */
+function renderTopic(t){
+  view.innerHTML=`
+  <div class="topic-header">
+    <span class="tag">${t.roman} · ${t.sectionName} · Topic ${t.globalNum}</span>
+    <h2>${t.title}</h2>
+  </div>
+  <div class="mode-tabs">
+    <button class="mode-tab ${currentMode==='learn'?'active':''}" onclick="switchMode('learn')">Learn</button>
+    <button class="mode-tab ${currentMode==='test'?'active':''}" onclick="switchMode('test')">Test</button>
+    <button class="mode-tab ${currentMode==='flash'?'active':''}" onclick="switchMode('flash')">Flashcards</button>
+  </div>
+  <div id="modeBody"></div>`;
+  renderMode(t);
+}
+function switchMode(m){currentMode=m;const t=byKey(currentKey);
+  document.querySelectorAll('.mode-tab').forEach((el,i)=>el.classList.toggle('active',['learn','test','flash'][i]===m));
+  renderMode(t);document.getElementById('main').scrollTop=120;}
+
+function renderMode(t){
+  const body=document.getElementById('modeBody');
+  if(currentMode==='learn')body.innerHTML=learnHTML(t);
+  else if(currentMode==='test')startQuiz(t,body);
+  else body.innerHTML=flashHTML(t);
+}
+
+/* ---------- Learn ---------- */
+const FIELDS=[
+ ['definition','Definition','D'],
+ ['etiology','Aetiology','A'],
+ ['symptoms','Symptoms','S'],
+ ['diagnosis','Diagnosis','Dx'],
+ ['treatment','Treatment','Tx'],
+ ['complications','Complications','C']
+];
+function learnHTML(t){
+  const L=t.content.learn;
+  let cards=FIELDS.map(([k,label,ic])=>`
+    <div class="field">
+      <div class="field-head"><span class="field-icon">${ic}</span><h3>${label}</h3></div>
+      <div class="field-body">${L[k]}</div>
+    </div>`).join('');
+  const mastered=getP(t.key).mastered;
+  return cards+`<div class="learn-actions">
+    <button class="btn-primary" onclick="switchMode('test')">Test myself on this →</button>
+    <button class="btn-ghost" onclick="switchMode('flash')">Flashcards</button>
+    <button class="btn-ghost" onclick="toggleMastered('${t.key}')">${mastered?'✓ Mastered — unmark':'Mark as mastered'}</button>
+    <button class="btn-ghost btn-reset" onclick="resetTopic('${t.key}')">↺ Reset this topic</button>
+  </div>`;
+}
+function toggleMastered(key){const p=getP(key);setP(key,{mastered:!p.mastered});renderMode(byKey(key));toast(getP(key).mastered?'Marked as mastered':'Unmarked')}
+
+/* ---------- Flashcards ---------- */
+function flashHTML(t){
+  const F=t.content.flash;
+  const cards=FIELDS.map(([k,label])=>`
+    <div class="fc" onclick="this.classList.toggle('flipped')">
+      <div class="fc-inner">
+        <div class="fc-face fc-front"><div class="fc-lab">${label}</div>
+          <div class="fc-q">${label}</div><div class="fc-tap">tap to reveal →</div></div>
+        <div class="fc-face fc-back"><div class="fc-a">${F[k]}</div></div>
+      </div></div>`).join('');
+  return `<p class="fc-hint">Tap a card to flip it. Six condensed cards summarise the whole topic — ideal for last-week revision.</p>
+    <div class="fc-deck">${cards}</div>`;
+}
+/* ============================================================
+   TEST / QUIZ ENGINE
+   ============================================================ */
+let quizState=null;
+function startQuiz(t,body){
+  quizState={topic:t,i:0,correct:0,answered:false,results:[]};
+  renderQuestion(body);
+}
+function normalize(s){return(s||'').toLowerCase().replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim()}
+function checkAnswer(userText,item){
+  const u=normalize(userText);
+  if(!u)return false;
+  const kws=item.keywords||[];
+  let hits=0;
+  kws.forEach(k=>{if(u.includes(normalize(k)))hits++});
+  const need=item.minMatch||Math.max(1,Math.ceil(kws.length/2));
+  return hits>=need;
+}
+function renderQuestion(body){
+  const {topic,i}=quizState;
+  const quiz=topic.content.quiz;
+  if(i>=quiz.length){return finishQuiz(body)}
+  const item=quiz[i];
+  const pct=Math.round(i/quiz.length*100);
+  body.innerHTML=`
+    <div class="quiz-progress">
+      <div class="bar"><i style="width:${pct}%"></i></div>
+      <span>${i+1} / ${quiz.length}</span>
+    </div>
+    <div class="qcard">
+      <div class="qn">Question ${i+1}</div>
+      <div class="qq">${item.q}</div>
+      <textarea id="ans" placeholder="Type your answer in your own words…"></textarea>
+      <div class="q-actions">
+        <button class="btn-primary" id="submitBtn">Submit answer</button>
+        <button class="btn-ghost" id="revealBtn">Show answer</button>
+      </div>
+      <div id="fb"></div>
+    </div>`;
+  const ta=document.getElementById('ans');ta.focus();
+  document.getElementById('submitBtn').onclick=()=>submitAnswer(body,false);
+  document.getElementById('revealBtn').onclick=()=>submitAnswer(body,true);
+  ta.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='Enter')submitAnswer(body,false)});
+}
+function submitAnswer(body,revealOnly){
+  const {topic,i}=quizState;
+  const item=topic.content.quiz[i];
+  const ta=document.getElementById('ans');
+  const userText=ta.value;
+  if(!revealOnly && !userText.trim()){toast('Type an answer, or use “Show answer”.');return}
+  ta.disabled=true;
+  const ok=revealOnly?false:checkAnswer(userText,item);
+  if(ok)quizState.correct++;
+  quizState.results[i]=ok;
+  document.getElementById('submitBtn').disabled=true;
+  document.getElementById('revealBtn').disabled=true;
+  const fb=document.getElementById('fb');
+  fb.innerHTML=`
+    <div class="feedback ${ok?'correct':'wrong'}">
+      <div class="verdict">${ok?'✓ Looks correct':(revealOnly?'Model answer':'✗ Not quite — compare with the model answer')}</div>
+      <div class="model"><span class="lab">Model answer</span>${item.answer}</div>
+      ${!ok?`<div class="override">Were you actually right? <button onclick="markCorrect(this)">Count as correct</button> — automated checking only matches keywords, so trust your own judgement.</div>`:''}
+    </div>
+    <div class="q-actions" style="margin-top:16px">
+      <button class="btn-primary" id="nextBtn">${i+1>=topic.content.quiz.length?'See results →':'Next question →'}</button>
+    </div>`;
+  document.getElementById('nextBtn').onclick=()=>{quizState.i++;renderQuestion(body)};
+}
+function markCorrect(btn){
+  const i=quizState.i;
+  if(!quizState.results[i]){quizState.results[i]=true;quizState.correct++}
+  btn.closest('.feedback').className='feedback correct';
+  btn.closest('.feedback').querySelector('.verdict').textContent='✓ Counted as correct';
+  btn.closest('.override').remove();
+}
+function finishQuiz(body){
+  const {topic,correct}=quizState;
+  const total=topic.content.quiz.length;
+  const pct=Math.round(correct/total*100);
+  /* save best */
+  const prev=getP(topic.key).quiz;
+  const best=(!prev||correct/total>=prev.correct/prev.total)?{correct,total}:prev;
+  setP(topic.key,{quiz:best,mastered:getP(topic.key).mastered||pct===100});
+  const msg=pct===100?'Perfect — topic mastered.':pct>=60?'Solid. Review the misses and try again.':'Worth another pass through the Learn notes.';
+  body.innerHTML=`<div class="quiz-done">
+    <div class="score">${correct}/${total}</div>
+    <p>${pct}% · ${msg}</p>
+    <div class="learn-actions" style="justify-content:center">
+      <button class="btn-primary" onclick="switchMode('test')">Retry test</button>
+      <button class="btn-ghost" onclick="switchMode('learn')">Back to notes</button>
+      <button class="btn-ghost" onclick="switchMode('flash')">Flashcards</button>
+    </div></div>`;
+  refreshStatusUI();
+}
+
+/* ============================================================
+   BACKUP / RESTORE
+   ============================================================ */
+document.getElementById('exportBtn').onclick=()=>{
+  const data=JSON.stringify({app:'mu-sofia-im',version:1,exported:new Date().toISOString(),progress},null,2);
+  const blob=new Blob([data],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='mu-sofia-im-progress.json';a.click();
+  URL.revokeObjectURL(url);toast('Progress backed up');
+};
+document.getElementById('importBtn').onclick=()=>document.getElementById('importFile').click();
+document.getElementById('importFile').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const d=JSON.parse(r.result);
+      if(d&&d.progress){progress=d.progress;saveProgress();buildNav(document.getElementById('search').value);render();refreshStatusUI();toast('Progress restored')}
+      else toast('That file has no progress data')
+    }catch(err){toast('Could not read that file')}
+    e.target.value='';
+  };
+  r.readAsText(f);
+};
+
+/* ============================================================
+   INIT
+   ============================================================ */
+initTheme();
+buildNav();
+render();
+refreshStatusUI();
+</script>
+</body>
+</html>
