@@ -58,6 +58,13 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   background:var(--surface-2);color:var(--ink);font-size:13.5px;outline:none;
 }
 .searchbox input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+.side-nav{padding:12px 16px 4px;display:flex;flex-direction:column;gap:7px}
+.side-link{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface-2);color:var(--ink);font-family:'Inter';font-size:13px;font-weight:600;text-align:left}
+.side-link:hover{border-color:var(--primary);color:var(--primary-deep)}
+.side-link.active{background:var(--primary-soft);border-color:var(--primary);color:var(--primary-deep)}
+.side-link-ic{color:var(--primary);font-size:15px;width:16px;text-align:center}
+.side-link.active .side-link-ic{color:var(--primary-deep)}
+.side-link-pct{margin-left:auto;font-size:11.5px;color:var(--muted);font-weight:500;font-variant-numeric:tabular-nums}
 
 .nav{overflow-y:auto;flex:1;padding:8px 8px 24px}
 .nav::-webkit-scrollbar{width:9px}
@@ -296,6 +303,15 @@ html[data-theme="dark"] .fc-back .fc-a{color:var(--ink)}
       <div class="eyebrow">MU Sofia · Internal Medicine</div>
       <h1>State Exam Revision</h1>
       <div class="sub">Learn · Test · Revise — 170 syllabus topics</div>
+    </div>
+    <div class="side-nav">
+      <button class="side-link" id="sideDash">
+        <span class="side-link-ic">⌂</span><span>Dashboard</span>
+      </button>
+      <button class="side-link" id="sideProgress">
+        <span class="side-link-ic">◔</span><span>Progress tracker</span>
+        <span class="side-link-pct" id="sideProgressPct">0%</span>
+      </button>
     </div>
     <div class="searchbox">
       <input type="text" id="search" placeholder="Search topics…" autocomplete="off">
@@ -755,7 +771,7 @@ function buildNav(filter){
       const item=document.createElement('button');
       item.className='topic-item'+(t.key===currentKey?' active':'')+(t.content?'':' locked');
       item.dataset.key=t.key;
-      const st=topicStatus(t.key);
+      const st=getP(t.key).mastered?'mastered':'';
       item.innerHTML=`<span class="topic-num">${t.globalNum}</span>
         <span class="dot ${st}"></span>
         <span class="topic-txt">${t.title}</span>
@@ -774,10 +790,14 @@ function refreshStatusUI(){
   /* update dots + active state without full rebuild */
   document.querySelectorAll('.topic-item').forEach(el=>{
     const key=el.dataset.key;
-    el.classList.toggle('active',key===currentKey);
+    el.classList.toggle('active',key===currentKey && route==='topic');
     const dot=el.querySelector('.dot');
-    if(dot)dot.className='dot '+topicStatus(key);
+    if(dot)dot.className='dot '+(getP(key).mastered?'mastered':'');
   });
+  const sp=document.getElementById('sideProgress');
+  if(sp)sp.classList.toggle('active',route==='progress');
+  const sd=document.getElementById('sideDash');
+  if(sd)sd.classList.toggle('active',route==='dashboard');
   updateMiniProgress();
 }
 
@@ -787,6 +807,8 @@ function updateMiniProgress(){
   const pct=avail.length?Math.round(mastered/avail.length*100):0;
   document.getElementById('miniBar').style.width=pct+'%';
   document.getElementById('miniPct').textContent=pct+'%';
+  const spp=document.getElementById('sideProgressPct');
+  if(spp)spp.textContent=pct+'%';
 }
 
 /* mobile drawer */
@@ -795,6 +817,8 @@ function closeSidebar(){document.getElementById('sidebar').classList.remove('ope
 document.getElementById('menuToggle').onclick=openSidebar;
 document.getElementById('backdrop').onclick=closeSidebar;
 document.getElementById('miniProgress').onclick=goProgress;
+document.getElementById('sideProgress').onclick=goProgress;
+document.getElementById('sideDash').onclick=()=>go(null);
 /* ============================================================
    RENDER
    ============================================================ */
