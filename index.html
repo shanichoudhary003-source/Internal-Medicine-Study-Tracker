@@ -59,6 +59,11 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 }
 .searchbox input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
 .side-nav{padding:12px 16px 4px;display:flex;flex-direction:column;gap:7px}
+.subject-switch{display:flex;gap:5px;padding:14px 16px 0}
+.subj-btn{flex:1;padding:9px 6px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface-2);color:var(--muted);font-family:'Inter';font-size:12px;font-weight:600;line-height:1.2}
+.subj-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+html[data-theme="dark"] .subj-btn.active{color:#1B0F18}
+.subj-btn:not(.active):hover{border-color:var(--primary);color:var(--primary)}
 .side-link{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface-2);color:var(--ink);font-family:'Inter';font-size:13px;font-weight:600;text-align:left}
 .side-link:hover{border-color:var(--primary);color:var(--primary-deep)}
 .side-link.active{background:var(--primary-soft);border-color:var(--primary);color:var(--primary-deep)}
@@ -312,10 +317,14 @@ html[data-theme="dark"] .fc-back .fc-a{color:var(--ink)}
 <body>
 <div class="app">
   <aside class="sidebar" id="sidebar">
+    <div class="subject-switch" id="subjectSwitch">
+      <button class="subj-btn" data-subj="im">Internal Medicine</button>
+      <button class="subj-btn" data-subj="surg">Surgery</button>
+    </div>
     <div class="brand">
-      <div class="eyebrow">MU Sofia · Internal Medicine</div>
+      <div class="eyebrow" id="brandEyebrow">MU Sofia · Internal Medicine</div>
       <h1>State Exam Revision</h1>
-      <div class="sub">Learn · Test · Revise — 170 syllabus topics</div>
+      <div class="sub" id="brandSub">Learn · Test · Revise</div>
     </div>
     <div class="side-nav">
       <button class="side-link" id="sideDash">
@@ -378,7 +387,7 @@ html[data-theme="dark"] .fc-back .fc-a{color:var(--ink)}
    Each populated topic has: learn{definition,etiology,symptoms,
    diagnosis,treatment,complications}, quiz[], flash{6 fields}
    ============================================================ */
-const SECTIONS=[
+const IM_SECTIONS=[
  {id:'pulm',roman:'I',name:'Pulmonary Diseases'},
  {id:'cardio',roman:'II',name:'Cardiovascular Diseases'},
  {id:'rheum',roman:'III',name:'Rheumatic Diseases'},
@@ -392,7 +401,7 @@ const SECTIONS=[
 ];
 
 /* Full syllabus — titles for every topic (content added batch by batch) */
-const TITLES={
+const IM_TITLES={
  pulm:["Acute bronchitis, tracheobronchitis, bronchiolitis","Chronic bronchitis, emphysema, COPD","Respiratory failure — pathophysiology & clinical features","Bacterial community-acquired pneumonia","Non-bacterial CAP (atypical, viral)","Hospital-acquired pneumonia & pneumonia in the immunocompromised","Treatment of pneumonias","Purulent diseases — bronchiectasis, lung abscess","Pleural effusions","Pulmonary tuberculosis","Pulmonary embolism","Diffuse parenchymal (interstitial) lung disease"],
  cardio:["Mitral stenosis","Mitral regurgitation","Aortic stenosis","Aortic insufficiency","Endocarditis","Pericardial diseases · pericarditis · cardiac tamponade","Myocarditis","Cardiomyopathies","Acute heart failure — cardiac asthma, pulmonary oedema, cardiogenic shock","Treatment of acute heart failure","Chronic congestive heart failure — aetiology, pathogenesis, features","Cardiac function parameters & treatment of chronic HF","Ischaemic heart disease · stable angina pectoris","STEMI — acute MI with ST elevation","NSTE-ACS — unstable angina & NSTEMI","Conduction disturbances & their treatment","Supraventricular arrhythmias — classification & features","Treatment of supraventricular arrhythmias","Ventricular arrhythmias — classification & features","Treatment of ventricular arrhythmias","Antiarrhythmic drugs — classification & doses","Arterial hypertension — aetiology, classification, complications","Arterial hypertension — treatment","Acute rheumatic fever · rheumocarditis","Chronic cor pulmonale","Aortic diseases — dissection, aneurysm, Takayasu"],
  rheum:["Rheumatoid arthritis","Ankylosing spondylitis","Reactive arthritis — rheumatic fever, Reiter, Lyme","Rheumatic fever — diagnosis & treatment","Psoriatic arthritis","Systemic lupus erythematosus","Progressive systemic sclerosis","Polymyositis / dermatomyositis","Vasculitis — classification & features","Henoch–Schönlein purpura","Polyarteritis nodosa","ANCA-associated vasculitis","Large-vessel vasculitis — Horton, Takayasu, Buerger","Antiphospholipid syndrome","Gout","Osteoarthritis","Osteoporosis","Soft-tissue rheumatism — fibromyalgia & others","Biological & biosimilar treatment of rheumatic disease","Humoral immunity changes in rheumatic disease"],
@@ -410,7 +419,7 @@ function L(definition,etiology,symptoms,diagnosis,treatment,complications){
   return {definition,etiology,symptoms,diagnosis,treatment,complications};
 }
 /* ============ SECTION I — PULMONARY (fully populated) ============ */
-const CONTENT={
+const IM_CONTENT={
 "pulm-1":{learn:L(
 `Acute inflammation of the tracheobronchial tree. <b>Acute bronchitis</b> affects the large airways (bronchi); <b>tracheobronchitis</b> also involves the trachea; <b>bronchiolitis</b> is inflammation of the small airways (bronchioles) — chiefly a disease of infants (RSV) but also seen in adults post-virally. It is usually self-limiting and in otherwise healthy adults resolves within 1–3 weeks.`,
 `Predominantly <b>viral</b>: influenza A/B, parainfluenza, RSV, rhinovirus, coronavirus, adenovirus, human metapneumovirus. Bacterial causes are much less common — <span class="hl">Mycoplasma pneumoniae, Chlamydophila pneumoniae, Bordetella pertussis</span>. Non-infective triggers include smoke and inhaled irritants/pollutants. In infants with bronchiolitis, <b>RSV</b> predominates.`,
@@ -679,27 +688,30 @@ flash:L(
 /* ============================================================
    APP ENGINE
    ============================================================ */
-const STORE_KEY='mu_sofia_im_progress_v1';
 const THEME_KEY='mu_sofia_im_theme';
+const SUBJECT_KEY='mu_sofia_active_subject';
 
-/* Build a flat topic index across all sections, numbered 1..170 */
-const TOPICS=[];
-let n=0;
-SECTIONS.forEach(sec=>{
-  TITLES[sec.id].forEach((title,i)=>{
-    n++;
-    const localId=i+1;
-    const key=sec.id+'-'+localId;
-    TOPICS.push({
-      globalNum:n, section:sec.id, sectionName:sec.name, roman:sec.roman,
-      localId, key, title,
-      content: CONTENT[key]||null
+/* Active bindings — swapped by loadSubject(). SUBJECTS registry is defined
+   further down, after all subject data (IM + Surgery) is declared. */
+let SECTIONS, TITLES, CONTENT, FIELDS, TOPICS=[], STORE_KEY, progress={}, activeSubject='im';
+
+function buildTopics(){
+  TOPICS=[];let n=0;
+  SECTIONS.forEach(sec=>{
+    TITLES[sec.id].forEach((title,i)=>{
+      n++;const localId=i+1;const key=sec.id+'-'+localId;
+      TOPICS.push({globalNum:n,section:sec.id,sectionName:sec.name,roman:sec.roman,localId,key,title,content:CONTENT[key]||null});
     });
   });
-});
-
-/* ---------- progress state ---------- */
-let progress=loadProgress();
+}
+function loadSubject(id){
+  activeSubject=(SUBJECTS[id]?id:'im');
+  const s=SUBJECTS[activeSubject];
+  SECTIONS=s.sections;TITLES=s.titles;CONTENT=s.content;FIELDS=s.fields;STORE_KEY=s.storeKey;
+  buildTopics();
+  progress=loadProgress();
+  try{localStorage.setItem(SUBJECT_KEY,activeSubject)}catch(e){}
+}
 function loadProgress(){try{return JSON.parse(localStorage.getItem(STORE_KEY))||{}}catch(e){return{}}}
 function saveProgress(){try{localStorage.setItem(STORE_KEY,JSON.stringify(progress))}catch(e){}}
 function getP(key){return progress[key]||{learned:false,mastered:false,quiz:null}}
@@ -925,7 +937,7 @@ function renderDashboard(){
       <span class="pct" style="color:var(--incorrect)">${q.correct}/${q.total}</span></div>`}).join('')}</div>`:''}
   <div class="section-title">Progress by section</div>
   <div class="sec-progress">${secRows}</div>
-  <p style="color:var(--muted);font-size:12.5px;margin-top:22px">Content is being added section by section. <b>Section I — Pulmonary Diseases</b> is fully loaded (12 topics); the remaining sections show titles and will be filled in next. Use <b>Backup</b> to save your progress to a file you can restore on any device.</p>
+  <p style="color:var(--muted);font-size:12.5px;margin-top:22px">Content is being added section by section — topics with notes are marked in the sidebar; the rest show titles and are filled in progressively. Use <b>Sync</b> to copy your progress between devices.</p>
   `;
   updateMiniProgress();
 }
@@ -1005,7 +1017,7 @@ function renderComing(t){
     <h2>${t.globalNum}. ${t.title}</h2></div>
     <div class="coming"><div class="ic">🩺</div>
     <h3>Content coming in the next batch</h3>
-    <p>This topic's full teaching notes, quiz and flashcards haven't been written yet. Section I (Pulmonary) is complete — the other sections are being added one at a time so every topic stays exam-accurate.</p>
+    <p>This topic's full teaching notes, quiz and flashcards haven't been written yet. Topics are being added in syllabus order so each stays exam-accurate — check back soon.</p>
     <div class="learn-actions" style="justify-content:center;margin-top:24px">
       <button class="btn-primary" onclick="go(null)">← Back to dashboard</button></div></div>`;
 }
@@ -1037,7 +1049,7 @@ function renderMode(t){
 }
 
 /* ---------- Learn ---------- */
-const FIELDS=[
+const IM_FIELDS=[
  ['definition','Definition','D'],
  ['etiology','Aetiology','A'],
  ['symptoms','Symptoms','S'],
@@ -1045,9 +1057,399 @@ const FIELDS=[
  ['treatment','Treatment','Tx'],
  ['complications','Complications','C']
 ];
+
+/* ============================================================
+   SURGERY  (MU Sofia — General Surgery, 116 oral-exam topics)
+   Field labels are set per-topic to suit each question type.
+   ============================================================ */
+const SURG_FIELDS=[
+ ['definition','Definition','D'],
+ ['etiology','Classification / Causes','Cl'],
+ ['symptoms','Clinical features','Cf'],
+ ['diagnosis','Diagnosis / Investigations','Dx'],
+ ['treatment','Treatment','Tx'],
+ ['complications','Complications / Key points','K']
+];
+
+const SURG_SECTIONS=[
+ {id:'gen',roman:'I',name:'General Principles & Trauma'},
+ {id:'infx',roman:'II',name:'Surgical Infections'},
+ {id:'hne',roman:'III',name:'Head, Neck & Endocrine'},
+ {id:'breast',roman:'IV',name:'Breast'},
+ {id:'thorax',roman:'V',name:'Thorax, Lung & Mediastinum'},
+ {id:'esoph',roman:'VI',name:'Oesophagus'},
+ {id:'vasc',roman:'VII',name:'Cardiovascular & Vascular'},
+ {id:'hernia',roman:'VIII',name:'Hernias'},
+ {id:'stomach',roman:'IX',name:'Oesophagus, Stomach & Duodenum'},
+ {id:'livbil',roman:'X',name:'Small Bowel, Liver & Biliary'},
+ {id:'pancspleen',roman:'XI',name:'Pancreas & Spleen'},
+ {id:'colorectal',roman:'XII',name:'Appendix, Colon, Rectum & Anus'},
+ {id:'oper',roman:'XIII',name:'Operative Principles & Complications'}
+];
+
+const SURG_TITLES={
+ gen:["Asepsis & antiseptics","Antibiotic therapy & prophylaxis in surgery","Preoperative period & patient preparation","Trauma — general principles & treatment","Local anaesthesia","Wounds — types, surgical treatment, primary & secondary suture","Burns — thermal, chemical & radiation","Frostbite — classification & treatment","Bleeding — types, non-surgical haemostasis, haemostatic agents","Methods for temporary & final haemostasis","Blood transfusion — blood groups & complications","Shock — classification, pathogenesis, treatment"],
+ infx:["Soft-tissue infections — abscess, phlegmon, furuncle, carbuncle, hidradenitis, erysipelas","Lymphangitis, lymphadenitis & elephantiasis","Tetanus"],
+ hne:["Maxillofacial injuries — diagnosis & treatment","Tumours of the maxillofacial region","Neck — diseases, injuries, inflammations & tumours","Endemic & sporadic goitre","Graves' disease, thyrotoxicosis & thyroiditis","Thyroid malignancies — staging & treatment","Parathyroid gland diseases"],
+ breast:["Benign breast tumours & precancerous lesions","Breast cancer","Rare breast malignancies & male breast cancer"],
+ thorax:["Chest injuries — types, diagnosis & treatment","Bronchiectasis; lung abscess & gangrene","Pulmonary cysts","Pneumothorax","Hydatid lung cyst (echinococcosis)","Pleural empyema (pyothorax)","Benign tumours of pleura & lung","Lung cancer","Metastatic lung tumours","Pulmonary tuberculosis — surgical aspects","Tumours of the mediastinum","Mediastinitis","Primary mediastinal tumours & cysts; Castleman disease","Closed chest trauma; spontaneous pneumothorax","Open chest trauma; complications of thoracic trauma"],
+ esoph:["Oesophageal diseases — diverticula, strictures, Barrett's","Achalasia — diagnosis, differential, treatment","Tumours of the oesophagus"],
+ vasc:["Emergencies in cardiovascular surgery","Aortic aneurysm; acute aortic dissection","Heart transplantation","Acute arterial occlusion","Traumatic & iatrogenic vascular injuries","Diseases of the aortic arch & its branches","Raynaud's, Takayasu's arteritis & Buerger's disease","Congenital heart disease — treatment","Vascular trauma — complications; pseudoaneurysm","Arterial insufficiency of the limbs — acute & chronic","Chronic venous insufficiency; post-thrombotic syndrome","Arteriosclerosis & diabetic gangrene of the limbs","Primary varicose veins; superficial thrombophlebitis","Deep vein thrombosis & pulmonary embolism"],
+ hernia:["Hernias — definition, types, diagnosis, complications, treatment","Abdominal wall hernias","Hiatal hernias","Inguinal hernias","Femoral hernias","Incisional (postoperative) hernias & biomaterials"],
+ stomach:["Malignant tumours of the oesophagus","Burns & chemical strictures of the oesophagus","Gastric & duodenal ulcers; Zollinger–Ellison syndrome","Complications of gastric & duodenal ulcers","Upper GI bleeding","Benign gastric tumours & precancerous lesions","Malignant gastric tumours","Duodenostasis"],
+ livbil:["Small intestine diseases, tumours & Meckel's diverticulum","Cholecystitis & cholelithiasis","Choledocholithiasis","Cholangitis","Obstructive (mechanical) jaundice","Gallbladder mucocele, empyema & biliary peritonitis","Cancer of the gallbladder & bile ducts","Hydatid cyst of the liver (echinococcosis)","Liver abscesses","Benign liver tumours","Liver cancer","Liver cirrhosis — surgical aspects","Liver transplantation","Portal hypertension"],
+ pancspleen:["Acute pancreatitis","Chronic pancreatitis, pseudocysts & pancreatic fistulas","Cancer of the pancreas","Endocrine tumours of the pancreas","Spleen — surgical diseases & injuries","Splenic abscess & echinococcosis"],
+ colorectal:["Acute appendicitis & Meckel's diverticulum","Inflammatory bowel disease","Megacolon","Diverticulosis of the colon","Benign colonic disease — polyps & polyposis syndromes","Colon cancer","Abdominal injuries — types","Ileus (bowel obstruction) — paralytic & spastic","Acute abdomen","Mesenteric ischaemia","Peritonitis","Haematogenous peritonitis","Congenital colonic disease — Hirschsprung's","Congenital diseases of the rectum & anus","Rectal haemorrhage","Rectal cancer","Rectal & anal prolapse","Acute & chronic paraproctitis; pilonidal cyst","Perianal fistulas","Haemorrhoids"],
+ oper:["Plastic surgery","Laparoscopic & minimally invasive surgery","Principles of surgical oncology","Non-surgical postoperative complications; compartment syndrome","Surgical postoperative complications; emergency relaparotomy"]
+};
+
+/* Helper for custom per-topic field labels */
+function F6(a,b,c,d,e,f){return [['definition',a,'D'],['etiology',b,'Cl'],['symptoms',c,'Cf'],['diagnosis',d,'Dx'],['treatment',e,'Tx'],['complications',f,'K']];}
+
+const SURG_CONTENT={
+"gen-1":{fields:F6('Definition','Asepsis — methods','Antiseptics vs disinfectants','Sterilisation methods','Surgical hand & field prep','Key points'),
+learn:L(
+`<b>Asepsis</b> is the set of methods that <span class="hl">prevent microorganisms from reaching the operative field</span> (sterile instruments, gowns, drapes, technique). <b>Antisepsis</b> is the <span class="hl">destruction or inhibition of microorganisms already present on living tissue</span> (skin, wound) using chemical agents. Lister introduced surgical antisepsis. Together they are the foundation of surgical infection control.`,
+`Asepsis has two arms. <b>Physical methods</b>: sterilisation by moist heat (autoclave), dry heat, gas (ethylene oxide), radiation and filtration; plus sterile gowns/gloves/drapes, theatre discipline and laminar airflow. The aim is a <b>sterile field</b> with a no-touch technique.`,
+`An <b>antiseptic</b> is applied to <span class="hl">living tissue</span> (skin, wounds) — e.g. 70% alcohol, chlorhexidine, povidone-iodine, hydrogen peroxide. A <b>disinfectant</b> is applied to <span class="hl">inanimate surfaces/instruments</span> — e.g. glutaraldehyde, formaldehyde. Sterilisation kills <b>all</b> microbes including spores; disinfection reduces numbers but may spare spores.`,
+`<b>Autoclave</b> (steam under pressure, 121°C or 134°C) is the standard for surgical instruments. Heat-sensitive items (endoscopes) → <b>ethylene oxide</b> or plasma sterilisation. Single-use disposables are widely used. Sterility is verified with Bowie–Dick and biological (spore) indicators.`,
+`<b>Surgical hand antisepsis</b> (scrub) with chlorhexidine or povidone-iodine; <b>patient skin prep</b> painted in concentric circles from the incision outward; sterile draping; strict control of theatre traffic.`,
+`Any breach in asepsis/antisepsis leads to <b>surgical site infection</b>. Remember: asepsis keeps microbes away; antisepsis removes those already present. Sterilisation = spores killed; disinfection = spores may survive.`),
+quiz:[
+ {q:"Define asepsis and antisepsis and state the difference.",answer:"Asepsis = methods that PREVENT microorganisms reaching the surgical field (sterile technique/instruments). Antisepsis = DESTROYING/inhibiting microorganisms already on living tissue with chemical agents.",keywords:["prevent","living tissue","destroy","already","sterile"],minMatch:2},
+ {q:"What is the standard method for sterilising surgical instruments, and what is used for heat-sensitive items?",answer:"Autoclave (steam under pressure, 121/134°C) for instruments; ethylene oxide (or plasma) for heat-sensitive items like endoscopes.",keywords:["autoclave","steam","ethylene oxide","gas","plasma"],minMatch:2},
+ {q:"What is the difference between sterilisation and disinfection?",answer:"Sterilisation kills all microorganisms including bacterial spores; disinfection reduces microbial numbers but may not kill spores.",keywords:["spores","all","kills","reduces"],minMatch:2}
+],
+flash:L(
+"Asepsis = prevent microbes reaching field (sterile technique). Antisepsis = destroy microbes on living tissue.",
+"Physical: autoclave, dry heat, ethylene oxide, radiation, filtration + sterile gowns/drapes/laminar flow.",
+"Antiseptic = living tissue (alcohol, chlorhexidine, povidone-iodine). Disinfectant = surfaces (glutaraldehyde).",
+"Autoclave (121/134°C) standard; ethylene oxide for heat-sensitive. Verify: Bowie–Dick, spore indicators.",
+"Scrub with chlorhexidine/povidone; skin prep concentric circles outward; sterile drape; control traffic.",
+"Breach → SSI. Sterilisation kills spores; disinfection may not.")
+},
+
+"gen-2":{fields:F6('Definition','Prophylaxis — principles','Wound classification','Therapeutic use','Regimens & timing','Key points'),
+learn:L(
+`Antibiotics are used in surgical patients in two ways: <b>therapeutically</b>, to treat an established infection, and <b>prophylactically</b>, to prevent <span class="hl">surgical site infection (SSI)</span>.`,
+`<b>Prophylaxis</b> is indicated for clean-contaminated, contaminated and dirty operations, and for clean operations when a prosthesis/implant is used or the patient is high-risk. Give a <span class="hl">single IV dose within 60 minutes before skin incision</span>; re-dose in long operations or major blood loss. The agent must cover the expected flora.`,
+`Wounds are classified by contamination — <b>clean</b> (no viscus opened), <b>clean-contaminated</b> (viscus opened, controlled), <b>contaminated</b> (spillage/acute inflammation), <b>dirty</b> (established infection/perforation). SSI risk and antibiotic need rise across these classes.`,
+`For an <b>established infection</b>, start empirical broad-spectrum antibiotics then narrow to targeted therapy by culture and sensitivity. <span class="hl">Source control (drainage of pus, removal of infected tissue) is essential</span> — antibiotics alone are not enough.`,
+`Typical prophylaxis: <b>cefazolin/cefuroxime</b> for skin/staphylococcal flora; add <b>metronidazole</b> for colorectal (anaerobes); vancomycin if MRSA risk. Prophylaxis is usually a single dose (≤24 h). Therapy is continued for an adequate course guided by the clinical picture and cultures.`,
+`Overuse breeds <b>resistance</b> and <b>Clostridioides difficile</b> colitis. The two exam points: correct <b>timing</b> (within 1 h before incision) and that <b>prophylaxis never substitutes for source control</b>.`),
+quiz:[
+ {q:"When should surgical antibiotic prophylaxis be given relative to incision?",answer:"A single IV dose within 60 minutes (1 hour) before skin incision; re-dose for long operations or major blood loss.",keywords:["60","1 hour","before incision","within an hour"],minMatch:1},
+ {q:"List the four wound contamination classes.",answer:"Clean, clean-contaminated, contaminated, and dirty.",keywords:["clean","clean-contaminated","contaminated","dirty"],minMatch:3},
+ {q:"For a colorectal operation, what must prophylaxis cover that a simple cephalosporin misses?",answer:"Anaerobes — so add metronidazole (e.g. cefuroxime + metronidazole).",keywords:["anaerobe","anaerobes","metronidazole"],minMatch:1}
+],
+flash:L(
+"Two uses: therapy of established infection + prophylaxis to prevent surgical site infection (SSI).",
+"Prophylaxis: clean-contaminated/contaminated/dirty, or clean + implant/high-risk. Single IV dose <60min pre-incision.",
+"Wound classes: clean, clean-contaminated, contaminated, dirty (rising SSI risk).",
+"Therapy: empirical → targeted by culture. Source control (drainage) essential — antibiotics not enough alone.",
+"Cefazolin/cefuroxime; + metronidazole for colorectal (anaerobes); vancomycin if MRSA. Prophylaxis single dose ≤24h.",
+"Overuse → resistance, C. difficile. Key: timing <1h pre-incision; never replaces source control.")
+},
+
+"gen-3":{fields:F6('Definition','Assessment & risk','Optimisation','Consent & planning','Immediate pre-op','Key points'),
+learn:L(
+`The <b>preoperative period</b> runs from the decision to operate until the patient enters theatre. Its purpose is to <span class="hl">optimise the patient and minimise operative risk</span>.`,
+`<b>Assessment</b>: full history and examination, identify comorbidities, and grade fitness with the <span class="hl">ASA classification (I–V)</span>. Baseline investigations as indicated — FBC, U&E, glucose, coagulation, <b>group & save/crossmatch</b>, ECG and CXR — plus formal anaesthetic review.`,
+`<b>Optimisation</b>: control diabetes, hypertension, cardiac and respiratory disease; correct anaemia; treat active infection; improve nutrition; encourage smoking cessation. <span class="hl">Adjust drugs</span> — stop/bridge anticoagulants and antiplatelets, manage metformin and steroids appropriately.`,
+`<b>Consent & planning</b>: obtain informed consent, mark the operative site, plan fasting (<span class="hl">nil by mouth ~6 h for solids, 2 h for clear fluids</span>), bowel preparation if required, and decide on VTE and antibiotic prophylaxis.`,
+`<b>Immediately pre-op</b>: premedication if needed, IV access, urinary catheter/NG tube if indicated, VTE prophylaxis (LMWH, compression stockings), skin preparation, and completion of the <b>WHO Surgical Safety Checklist</b>.`,
+`Thorough preparation reduces morbidity and mortality; <b>ASA grade predicts risk</b>. The classic pitfalls examiners probe: missed anticoagulation, uncontrolled diabetes, and inadequate consent.`),
+quiz:[
+ {q:"What scoring system grades a patient's fitness for anaesthesia/surgery?",answer:"The ASA (American Society of Anesthesiologists) physical status classification, grades I–V.",keywords:["asa"],minMatch:1},
+ {q:"State the usual fasting times before elective surgery.",answer:"About 6 hours for solids and 2 hours for clear fluids before surgery.",keywords:["6","2","six","two"],minMatch:2},
+ {q:"Name two forms of VTE (thromboprophylaxis) used perioperatively.",answer:"Low-molecular-weight heparin (LMWH) and mechanical measures — graduated compression stockings / intermittent pneumatic compression.",keywords:["lmwh","heparin","compression","stockings","mechanical"],minMatch:1}
+],
+flash:L(
+"Preop period = decision to operate → entering theatre; goal is optimise patient & minimise risk.",
+"Assess: history/exam, comorbidities, ASA I–V; tests FBC/U&E/glucose/coag/G&S/ECG/CXR + anaesthetic review.",
+"Optimise: diabetes/BP/cardiac/resp, anaemia, infection, nutrition, stop smoking; adjust anticoagulants/metformin/steroids.",
+"Consent + mark site; fasting ~6h solids/2h clear fluids; bowel prep; plan VTE & antibiotic prophylaxis.",
+"Immediate: premed, IV access, catheter/NG, LMWH + stockings, skin prep, WHO checklist.",
+"Good prep ↓ morbidity/mortality; ASA predicts risk. Pitfalls: anticoagulation, diabetes, consent.")
+},
+
+"gen-4":{fields:F6('Definition','Mechanisms & types','Effects on the body','Primary survey (ABCDE)','Management','Key points'),
+learn:L(
+`<b>Trauma</b> is tissue injury caused by external energy transferred to the body. <b>"Traumatism"</b> refers to the body's overall (local and systemic) response to that injury.`,
+`Classified by mechanism as <b>blunt</b> or <b>penetrating</b>, and by energy type — mechanical, thermal, chemical, electrical or radiation. Injury may be <b>isolated</b> or <span class="hl">polytrauma</span> (multiple systems, life-threatening).`,
+`<b>Local effects</b>: pain, swelling, deformity, wound, bleeding. <b>Systemic effects</b>: haemorrhagic <b>shock</b> and a systemic inflammatory response (SIRS). Polytrauma can rapidly become life-threatening.`,
+`Assessment follows <b>ATLS</b>. The <span class="hl">primary survey is ABCDE</span> — <b>A</b>irway with C-spine control, <b>B</b>reathing, <b>C</b>irculation with haemorrhage control, <b>D</b>isability (GCS, pupils), <b>E</b>xposure/environment. Adjuncts: FAST ultrasound, X-rays, CT. A head-to-toe <b>secondary survey</b> follows once stabilised.`,
+`<b>Management</b> is simultaneous resuscitation: secure airway + oxygen, decompress tension pneumothorax, <span class="hl">control external bleeding by direct pressure</span>, gain IV access and give blood/fluids, treat the greatest threat to life first. Use <b>damage-control surgery</b>, analgesia and tetanus prophylaxis, then definitive care.`,
+`The <b>"golden hour"</b> matters; <span class="hl">haemorrhage is the leading preventable cause of trauma death</span>. Beware the lethal triad — <b>hypothermia, acidosis, coagulopathy</b>. Always treat the greatest immediate threat to life first (ABCDE order).`),
+quiz:[
+ {q:"What does the primary survey ABCDE stand for in trauma?",answer:"Airway (with C-spine control), Breathing, Circulation (with haemorrhage control), Disability (neuro/GCS), Exposure.",keywords:["airway","breathing","circulation","disability","exposure"],minMatch:4},
+ {q:"What is the leading preventable cause of death in trauma?",answer:"Haemorrhage (uncontrolled bleeding).",keywords:["haemorrhage","hemorrhage","bleeding"],minMatch:1},
+ {q:"Name the lethal triad of trauma.",answer:"Hypothermia, acidosis, and coagulopathy.",keywords:["hypothermia","acidosis","coagulopathy"],minMatch:2}
+],
+flash:L(
+"Trauma = tissue injury from external energy; traumatism = body's response.",
+"Blunt vs penetrating; mechanical/thermal/chemical/electrical/radiation; isolated vs polytrauma.",
+"Local: pain, swelling, deformity, bleeding. Systemic: shock, SIRS.",
+"ATLS primary survey ABCDE (Airway+C-spine, Breathing, Circulation+haemostasis, Disability, Exposure). FAST/CT.",
+"Resuscitate simultaneously: airway+O2, decompress tension PTX, stop bleeding, IV access+blood, damage control, tetanus.",
+"Golden hour; haemorrhage = top preventable death; lethal triad = hypothermia+acidosis+coagulopathy.")
+},
+
+"gen-5":{fields:F6('Definition','Agents & techniques','Mechanism of action','Doses & safe limits','Use & technique','Toxicity & key points'),
+learn:L(
+`<b>Local anaesthesia</b> is a reversible blockade of nerve conduction in a defined area, producing <span class="hl">loss of sensation without loss of consciousness</span>.`,
+`Two chemical classes: <b>amides</b> (lidocaine, bupivacaine, articaine — metabolised in liver) and <b>esters</b> (procaine — more allergenic). Techniques: topical, <b>infiltration</b>, field block, peripheral nerve block, IV regional (Bier), spinal and epidural.`,
+`Local anaesthetics <span class="hl">block voltage-gated sodium channels</span>, preventing depolarisation and impulse conduction. <b>Adrenaline</b> is often added to prolong action and reduce bleeding — but is <span class="hl">avoided in end-arterial areas</span> (fingers, toes, penis, nose, ears) to prevent ischaemic necrosis.`,
+`Know the safe maxima: <b>lidocaine ≈ 3 mg/kg</b> (up to <b>7 mg/kg with adrenaline</b>); <b>bupivacaine ≈ 2 mg/kg</b> — longer-acting but more cardiotoxic.`,
+`Technique: <span class="hl">aspirate before injecting</span> to avoid intravascular delivery; infiltrate wound edges; use nerve blocks for larger fields. Onset and duration depend on the agent.`,
+`<b>Local anaesthetic systemic toxicity (LAST)</b>: perioral tingling, tinnitus, agitation → seizures → cardiovascular collapse (especially bupivacaine). Treat with <span class="hl">IV lipid emulsion (Intralipid)</span> plus airway/ACLS support. Also: allergy (more with esters). Never use adrenaline in end-arterial areas.`),
+quiz:[
+ {q:"What is the mechanism of action of local anaesthetics?",answer:"They block voltage-gated sodium (Na⁺) channels, preventing membrane depolarisation and nerve impulse conduction.",keywords:["sodium","na channel","voltage-gated","depolarisation","depolarization"],minMatch:1},
+ {q:"In which anatomical sites must you avoid adrenaline-containing local anaesthetic, and why?",answer:"End-arterial areas — fingers, toes, penis, nose, ears — because vasoconstriction can cause ischaemic necrosis.",keywords:["fingers","toes","penis","nose","ears","end-arter","end artery"],minMatch:2},
+ {q:"How is local anaesthetic systemic toxicity (LAST) treated?",answer:"IV lipid emulsion (Intralipid) plus supportive airway/circulatory management (ACLS); stop injection immediately.",keywords:["lipid","intralipid","lipid emulsion"],minMatch:1}
+],
+flash:L(
+"Reversible block of nerve conduction in a defined area — no loss of consciousness.",
+"Amides (lidocaine, bupivacaine, articaine) vs esters (procaine). Topical/infiltration/nerve block/spinal/epidural.",
+"Blocks voltage-gated Na⁺ channels. Adrenaline prolongs & reduces bleeding — NOT in fingers/toes/penis/nose/ears.",
+"Lidocaine 3mg/kg (7 with adrenaline); bupivacaine 2mg/kg (longer, cardiotoxic).",
+"Aspirate before injecting; infiltrate edges; nerve block for larger areas.",
+"LAST: tingling/tinnitus→seizures→CV collapse. Treat with IV lipid emulsion + ACLS.")
+},
+
+"gen-6":{fields:F6('Definition','Types of wound','Healing / intention','Assessment','Surgical treatment & suture','Complications & key points'),
+learn:L(
+`A <b>wound</b> is a disruption of the normal structure and function of tissue — a breach of skin or mucosa.`,
+`Classified by <b>mechanism</b>: incised, lacerated, contused, puncture, abrasion, avulsion, bite, gunshot. And by <b>contamination</b>: clean, contaminated, infected. Wounds are also acute or chronic.`,
+`Wounds heal by three routes. <b>Primary intention</b> — clean wound with apposed edges (sutured). <b>Secondary intention</b> — wound left open to granulate (infected or tissue loss). <b>Tertiary / delayed primary</b> — closed after a few days once clean.`,
+`<b>Assessment</b>: size, depth, neurovascular/tendon involvement, contamination and foreign bodies; and check <span class="hl">tetanus status</span>.`,
+`<b>Surgical treatment</b>: clean and <b>débride</b> (remove devitalised tissue and foreign material), irrigate, secure haemostasis. <span class="hl">Primary suture</span> for clean wounds seen early (<6 h); <b>delayed primary or secondary suture</b> for contaminated or late wounds. Give antibiotics and tetanus prophylaxis as indicated.`,
+`<b>Primary suture</b> = immediate closure; <b>secondary suture</b> = closing a granulating wound later. Complications: infection, dehiscence, haematoma, hypertrophic/keloid scarring. Do <span class="hl">not</span> primarily close heavily contaminated, bite, or late-presenting wounds.`),
+quiz:[
+ {q:"Describe healing by primary versus secondary intention.",answer:"Primary intention: clean wound with edges apposed/sutured, heals quickly with minimal scar. Secondary intention: wound left open, heals from the base by granulation and contraction (used for infected/tissue-loss wounds).",keywords:["apposed","sutured","granulation","open","contraction"],minMatch:2},
+ {q:"What is the first surgical step in managing a contaminated wound?",answer:"Débridement — removing devitalised tissue and foreign material — with irrigation and haemostasis.",keywords:["debridement","débridement","debride","clean","irrigat"],minMatch:1},
+ {q:"Which wounds should NOT undergo primary suture?",answer:"Heavily contaminated, infected, bite, or late-presenting (>6h) wounds — these are left for delayed primary/secondary closure.",keywords:["contaminated","bite","infected","late","secondary"],minMatch:2}
+],
+flash:L(
+"Wound = disruption of tissue structure/function (breach of skin/mucosa).",
+"Mechanism: incised, lacerated, contused, puncture, abrasion, avulsion, bite, gunshot. + clean/contaminated/infected.",
+"Primary intention (sutured), secondary (open, granulates), tertiary/delayed primary (closed later).",
+"Assess size/depth, neurovascular/tendon, contamination, foreign body, tetanus status.",
+"Débride + irrigate + haemostasis. Primary suture if clean & <6h; delayed/secondary if contaminated/late. Tetanus + abx.",
+"Complications: infection, dehiscence, haematoma, scar. Don't primarily close contaminated/bite/late wounds.")
+},
+
+"gen-7":{fields:F6('Definition','Types','Depth classification','Extent (TBSA) & airway','Management & fluids','Complications & key points'),
+learn:L(
+`<b>Burns</b> are tissue injuries caused by heat, chemicals, electricity or radiation, producing coagulative necrosis.`,
+`<b>Thermal</b> (flame, scald, contact); <b>chemical</b> — acids cause coagulative necrosis, <span class="hl">alkalis cause liquefactive necrosis and penetrate deeper</span>; <b>electrical</b> — deep/hidden tissue injury, arrhythmia, rhabdomyolysis; <b>radiation</b>.`,
+`Depth: <b>superficial (epidermal)</b> — red, painful, no blisters; <b>superficial partial-thickness</b> — blisters, very painful; <b>deep partial-thickness</b>; <b>full-thickness</b> — <span class="hl">painless, white/leathery</span>. Depth guides whether grafting is needed.`,
+`Estimate <b>%TBSA</b> with the <span class="hl">Wallace Rule of Nines</span> (or Lund–Browder in children). Assess the airway for <b>inhalation injury</b> — soot, hoarseness, singed nasal hairs — and consider carbon monoxide poisoning.`,
+`<b>Management</b>: stop the burning, ABCDE, <b>early intubation</b> if airway threatened. Fluid resuscitation by the <span class="hl">Parkland formula: 4 mL × kg × %TBSA of Ringer's lactate, half in the first 8 h</span>. Analgesia, wound care, escharotomy for circumferential full-thickness burns, and skin grafting. Chemical burns — irrigate copiously with water.`,
+`Complications: burn (hypovolaemic) shock, infection/sepsis, inhalation injury, compartment syndrome, contractures, and <b>Curling's ulcer</b> (stress ulcer). Refer major, airway, or special-site burns to a burns unit.`),
+quiz:[
+ {q:"State the Parkland formula for burn fluid resuscitation.",answer:"4 mL × body weight (kg) × %TBSA burned of Ringer's lactate over 24h, with half given in the first 8 hours.",keywords:["4","parkland","8 hours","half","ringer"],minMatch:2},
+ {q:"How do you estimate the body surface area burned in an adult?",answer:"The Wallace Rule of Nines (Lund–Browder chart in children).",keywords:["rule of nines","nines","wallace","lund"],minMatch:1},
+ {q:"What features suggest inhalation (airway) injury requiring early intubation?",answer:"Facial/oral soot, singed nasal hairs, hoarse voice, stridor, burns around the mouth/face, carbonaceous sputum.",keywords:["soot","singed","hoarse","stridor","facial","carbonaceous"],minMatch:2}
+],
+flash:L(
+"Burns = coagulative necrosis from heat/chemical/electrical/radiation.",
+"Thermal; chemical (acid=coagulative, alkali=liquefactive/deeper); electrical (hidden deep, arrhythmia, rhabdo); radiation.",
+"Depth: superficial (red), superficial partial (blisters), deep partial, full-thickness (painless, white/leathery).",
+"Rule of Nines / Lund–Browder for %TBSA. Check airway: soot, hoarse, singed nares; CO poisoning.",
+"Stop burn, ABCDE, early intubation. Parkland: 4mL×kg×%TBSA RL, ½ in first 8h. Escharotomy, grafting; chemical=irrigate.",
+"Burn shock, sepsis, inhalation injury, compartment syndrome, contractures, Curling ulcer. Refer major burns.")
+},
+
+"gen-8":{fields:F6('Definition','Mechanism & risk','Classification (degrees)','Assessment','Treatment','Complications & key points'),
+learn:L(
+`<b>Frostbite</b> is a localised cold injury in which tissue freezes, with <span class="hl">ice-crystal formation and microvascular thrombosis</span> causing cell death.`,
+`Caused by exposure to freezing temperatures. Risk rises with alcohol, immobility, wet or tight clothing, and peripheral vascular disease. It typically affects the <b>extremities</b> (fingers, toes), nose and ears.`,
+`Graded in degrees: <b>1st</b> — numbness and erythema, no blister (frostnip); <b>2nd</b> — clear blisters; <b>3rd</b> — haemorrhagic blisters (deeper); <b>4th</b> — <span class="hl">full-thickness involving muscle/bone</span> → necrosis and gangrene. Frozen tissue is initially white, waxy and hard.`,
+`Largely <b>clinical</b>; the true depth often only becomes clear after rewarming and <b>demarcation</b> over subsequent weeks.`,
+`<b>Rapid rewarming</b> in warm water (37–39°C) — but <span class="hl">do not rewarm if there is any risk of refreezing</span>. Give analgesia (rewarming is very painful), avoid rubbing the area, and give tetanus prophylaxis. <b>Delay débridement/amputation</b> until demarcation is complete ("frostbite in January, amputate in July"). Thrombolysis is used in selected severe cases.`,
+`Complications: gangrene, auto-amputation, infection, and long-term cold sensitivity/neuropathy. The key exam point: <b>do not amputate early</b> — wait for clear demarcation.`),
+quiz:[
+ {q:"How is frostbite rewarmed, and what must you avoid?",answer:"Rapid rewarming in warm water at 37–39°C; avoid rewarming if there is any risk of the tissue refreezing (and avoid rubbing the area).",keywords:["37","39","warm water","rapid","refreez"],minMatch:1},
+ {q:"Why is amputation delayed in frostbite?",answer:"Because the true extent of tissue loss only becomes apparent after demarcation over weeks — 'frostbite in January, amputate in July'. Early amputation risks removing salvageable tissue.",keywords:["demarcation","delay","january","july","weeks"],minMatch:1},
+ {q:"Describe a fourth-degree frostbite injury.",answer:"Full-thickness injury extending into muscle and bone, leading to necrosis and gangrene.",keywords:["full-thickness","muscle","bone","gangrene","necrosis"],minMatch:2}
+],
+flash:L(
+"Frostbite = tissue freezing → ice crystals + microvascular thrombosis → cell death.",
+"Freezing exposure; risk: alcohol, immobility, wet/tight clothing, PVD. Extremities, nose, ears.",
+"1st: numb/erythema (frostnip). 2nd: clear blisters. 3rd: haemorrhagic blisters. 4th: muscle/bone → gangrene.",
+"Clinical; true depth clear after demarcation over weeks.",
+"Rapid rewarm 37–39°C water (NOT if refreezing risk); analgesia; no rubbing; tetanus. Delay amputation till demarcation.",
+"Gangrene, auto-amputation, infection, cold sensitivity. Key: don't amputate early.")
+},
+
+"gen-9":{fields:F6('Definition','Classification','Clinical / severity','Assessment','Non-surgical haemostasis','Haemostatic agents & key points'),
+learn:L(
+`<b>Bleeding (haemorrhage)</b> is the escape of blood from the vascular system.`,
+`By <b>source</b>: <span class="hl">arterial</span> (bright red, pulsatile), <span class="hl">venous</span> (dark, steady flow), capillary (ooze). By <b>timing</b>: <b>primary</b> (at the moment of injury), <b>reactionary</b> (within 24 h, as BP rises and a clot dislodges), <b>secondary</b> (days later, from infection/vessel erosion). By <b>site</b>: external or internal (concealed).`,
+`Features of blood loss are those of <b>hypovolaemia</b> — tachycardia, hypotension, pallor, cool clammy skin, thirst, oliguria — graded as <span class="hl">haemorrhagic shock classes I–IV</span> by percentage blood loss.`,
+`Identify the source; use <b>FAST/CT</b> for suspected internal bleeding; monitor haemoglobin and vital signs; estimate blood loss.`,
+`<b>Non-surgical (conservative) haemostasis</b>: <span class="hl">direct pressure</span>, elevation, pressure dressing, tourniquet (temporary), wound packing; and correct coagulopathy — <b>tranexamic acid</b>, reverse anticoagulants, transfuse blood/products.`,
+`<b>Local haemostatic agents</b>: gelatin sponge, oxidised cellulose (Surgicel), fibrin glue, bone wax, topical thrombin. <b>Systemic</b>: tranexamic acid, vitamin K, FFP/platelets. Untreated bleeding → shock and death; the first response to visible bleeding is <b>direct pressure</b>.`),
+quiz:[
+ {q:"Classify bleeding by timing and define each.",answer:"Primary — at the time of injury; reactionary — within 24h as BP rises and clot dislodges; secondary — days later from infection or vessel wall erosion.",keywords:["primary","reactionary","secondary","24","erosion","infection"],minMatch:2},
+ {q:"How do you distinguish arterial from venous bleeding?",answer:"Arterial: bright red and pulsatile/spurting. Venous: darker red with steady, non-pulsatile flow.",keywords:["arterial","bright","pulsatile","venous","dark","steady"],minMatch:2},
+ {q:"Name two local and one systemic haemostatic agent.",answer:"Local: oxidised cellulose (Surgicel), gelatin sponge, fibrin glue, bone wax, topical thrombin. Systemic: tranexamic acid (also vitamin K, FFP).",keywords:["surgicel","gelatin","fibrin","bone wax","thrombin","tranexamic"],minMatch:2}
+],
+flash:L(
+"Haemorrhage = escape of blood from the vascular system.",
+"Source: arterial (bright, pulsatile), venous (dark, steady), capillary. Timing: primary/reactionary(<24h)/secondary(days). Site: external/internal.",
+"Hypovolaemia: tachycardia, ↓BP, pallor, clammy, oliguria. Haemorrhagic shock classes I–IV.",
+"Find source; FAST/CT for internal; monitor Hb & vitals.",
+"Non-surgical: direct pressure, elevation, dressing, tourniquet, packing; TXA, reverse anticoagulation, transfuse.",
+"Agents: Surgicel, gelatin sponge, fibrin glue, bone wax, thrombin; systemic TXA/vit K/FFP. First step = direct pressure.")
+},
+
+"gen-10":{fields:F6('Definition','Temporary methods','Final — mechanical','Final — thermal/energy','Final — chemical/biological','Key points'),
+learn:L(
+`<b>Haemostasis</b> is the arrest of bleeding. Methods are either <b>temporary</b> (to buy time) or <b>final/definitive</b> (permanent control).`,
+`<b>Temporary methods</b>: digital pressure, pressure dressing, <span class="hl">tourniquet</span>, wound packing, temporary vascular clamp or intraluminal shunt, and balloon tamponade (e.g. a Sengstaken–Blakemore tube for oesophageal varices).`,
+`<b>Final — mechanical</b>: <span class="hl">ligation</span> of the vessel, suture ligation, clips, vascular repair or anastomosis, and packing left in situ for damage-control surgery.`,
+`<b>Final — thermal/energy</b>: <b>electrocautery/diathermy</b> (monopolar or bipolar), argon-beam coagulation, the harmonic (ultrasonic) scalpel, and laser.`,
+`<b>Final — chemical/biological</b>: topical haemostatics (oxidised cellulose/Surgicel, fibrin glue, thrombin, gelatin sponge, bone wax) and systemic agents (<span class="hl">tranexamic acid</span>).`,
+`Choose the method by vessel size and site. A <b>tourniquet is temporary only</b> — note the application time because of ischaemia risk. <span class="hl">Definitive haemostasis must be achieved before closing</span>.`),
+quiz:[
+ {q:"Give three temporary methods of haemostasis.",answer:"Direct/digital pressure, pressure dressing, tourniquet, wound packing, temporary vascular clamp/shunt, balloon tamponade.",keywords:["pressure","tourniquet","packing","clamp","tamponade","shunt"],minMatch:2},
+ {q:"Name the main energy-based (thermal) methods of definitive haemostasis.",answer:"Electrocautery/diathermy (monopolar or bipolar), argon-beam coagulation, harmonic (ultrasonic) scalpel, laser.",keywords:["diathermy","electrocautery","cautery","argon","harmonic","laser"],minMatch:1},
+ {q:"Why must a tourniquet only be a temporary measure?",answer:"Because prolonged application causes distal ischaemia and tissue damage; application time must be recorded and definitive haemostasis achieved as soon as possible.",keywords:["ischaemia","ischemia","temporary","time","tissue damage"],minMatch:1}
+],
+flash:L(
+"Haemostasis = arrest of bleeding; temporary (buy time) vs final (definitive).",
+"Temporary: pressure, dressing, tourniquet, packing, clamp/shunt, balloon tamponade (Sengstaken).",
+"Final mechanical: ligation, suture ligation, clips, vascular repair/anastomosis, damage-control packing.",
+"Final thermal: diathermy (mono/bipolar), argon beam, harmonic scalpel, laser.",
+"Final chemical/biological: Surgicel, fibrin glue, thrombin, gelatin sponge, bone wax; systemic TXA.",
+"Match method to vessel/site. Tourniquet temporary (note time!). Achieve definitive haemostasis before closing.")
+},
+
+"gen-11":{fields:F6('Definition','Blood groups & components','Indications','Pre-transfusion checks','Administration','Complications & key points'),
+learn:L(
+`<b>Blood transfusion</b> is the intravenous administration of blood or blood components to restore <span class="hl">volume, oxygen-carrying capacity or clotting</span>.`,
+`Groups: <b>ABO</b> (A, B, AB, O) and <b>Rh(D)</b>. <span class="hl">O-negative is the universal red-cell donor</span>; AB-positive is the universal recipient. Components: packed red cells, fresh frozen plasma (FFP), platelets, and cryoprecipitate. Compatibility is checked by group & screen and crossmatch.`,
+`<b>Indications</b>: acute blood loss/haemorrhagic shock, symptomatic anaemia (red cells); coagulopathy (FFP); thrombocytopenia with bleeding (platelets); fibrinogen deficiency (cryoprecipitate).`,
+`<b>Pre-transfusion checks</b>: correct patient identification, valid group & crossmatch, check the unit and expiry, consent, and baseline observations, with a <span class="hl">bedside identity/compatibility check</span> before starting.`,
+`<b>Administration</b>: give through a blood filter, monitor observations closely; warm blood in massive transfusion. A <b>massive transfusion protocol</b> gives balanced red cells : FFP : platelets (~1:1:1) with tranexamic acid and calcium.`,
+`<b>Reactions</b> — immediate: <span class="hl">acute haemolytic (ABO mismatch)</span> with fever, loin/back pain, hypotension and DIC (<b>STOP the transfusion immediately</b>); febrile non-haemolytic; allergic/anaphylaxis; TACO (circulatory overload); TRALI (acute lung injury); bacterial contamination. Delayed: delayed haemolysis, infection transmission, iron overload, graft-versus-host disease. The <b>first action in any reaction is to stop the transfusion</b>.`),
+quiz:[
+ {q:"Which blood group is the universal red-cell donor, and which is the universal recipient?",answer:"O negative is the universal red-cell donor; AB positive is the universal recipient.",keywords:["o negative","o-","universal donor","ab positive","ab+"],minMatch:2},
+ {q:"What is the most feared immediate transfusion reaction and its first management step?",answer:"Acute haemolytic reaction from ABO incompatibility (fever, loin pain, hypotension, DIC). First step: STOP the transfusion immediately, then resuscitate and investigate.",keywords:["haemolytic","hemolytic","abo","stop","incompatib"],minMatch:2},
+ {q:"Differentiate TACO from TRALI.",answer:"TACO = transfusion-associated circulatory overload (volume overload → pulmonary oedema). TRALI = transfusion-related acute lung injury (immune-mediated non-cardiogenic pulmonary oedema).",keywords:["overload","taco","trali","lung injury","circulatory"],minMatch:2}
+],
+flash:L(
+"Transfusion = IV blood/components to restore volume, O2 carriage or clotting.",
+"ABO + Rh(D). O– universal RBC donor; AB+ universal recipient. Components: RBC, FFP, platelets, cryoprecipitate.",
+"Indications: haemorrhage/anaemia (RBC), coagulopathy (FFP), low platelets+bleeding (platelets).",
+"Checks: patient ID, crossmatch, unit/expiry, consent, baseline obs, bedside check.",
+"Give via filter, monitor; warm in massive transfusion. MTP ~1:1:1 RBC:FFP:platelets + TXA + calcium.",
+"Reactions: acute haemolytic (ABO)→STOP; febrile, allergic/anaphylaxis, TACO, TRALI, bacterial. First step: stop transfusion.")
+},
+
+"gen-12":{fields:F6('Definition','Classification','Clinical features','Assessment','Treatment','Complications & key points'),
+learn:L(
+`<b>Shock</b> is acute circulatory failure with <span class="hl">inadequate tissue perfusion and oxygen delivery</span>, causing cellular hypoxia. It is immediately life-threatening.`,
+`Four types: <b>hypovolaemic</b> (haemorrhage, fluid loss), <b>cardiogenic</b> (pump failure — e.g. MI), <b>obstructive</b> (cardiac tamponade, tension pneumothorax, massive PE), and <b>distributive</b> (septic, anaphylactic, neurogenic).`,
+`Tachycardia, hypotension, tachypnoea, <span class="hl">cool clammy skin</span> (but warm peripheries in early septic/distributive shock), oliguria, altered mental state and a <b>raised lactate</b>. Haemorrhagic shock is graded I–IV by blood loss.`,
+`ABCDE assessment; measure lactate and base deficit, identify the cause (FAST for bleeding, ECG for MI, cultures for sepsis); monitor urine output; CVP as an adjunct.`,
+`<b>Treat the cause and restore perfusion.</b> Hypovolaemic — control bleeding, IV fluids/blood. Cardiogenic — inotropes, treat the MI. Obstructive — decompress (pericardiocentesis, chest decompression, thrombolysis). <b>Septic</b> — fluids, early broad-spectrum antibiotics, source control, noradrenaline. <b>Anaphylactic</b> — <span class="hl">IM adrenaline</span>.`,
+`Untreated shock → multi-organ failure and death. <b>Early recognition and cause-directed treatment</b> are decisive; lactate and base deficit track severity and response.`),
+quiz:[
+ {q:"List the four main categories of shock with one cause each.",answer:"Hypovolaemic (haemorrhage), cardiogenic (MI/pump failure), obstructive (tamponade/tension pneumothorax/PE), distributive (septic/anaphylactic/neurogenic).",keywords:["hypovolaemic","hypovolemic","cardiogenic","obstructive","distributive","septic"],minMatch:3},
+ {q:"What is the first-line drug for anaphylactic shock and its route?",answer:"Adrenaline (epinephrine) given intramuscularly (IM).",keywords:["adrenaline","epinephrine","im","intramuscular"],minMatch:2},
+ {q:"Which bedside/lab marker best reflects the severity of tissue hypoperfusion in shock?",answer:"Serum lactate (and base deficit) — a raised lactate indicates anaerobic metabolism from hypoperfusion.",keywords:["lactate","base deficit"],minMatch:1}
+],
+flash:L(
+"Shock = acute circulatory failure → inadequate perfusion/O2 delivery → cellular hypoxia.",
+"Hypovolaemic, cardiogenic, obstructive (tamponade/tension PTX/PE), distributive (septic/anaphylactic/neurogenic).",
+"Tachycardia, ↓BP, tachypnoea, cool clammy (warm in early sepsis), oliguria, ↑lactate. Classes I–IV.",
+"ABCDE; lactate/base deficit; find cause (FAST/ECG/cultures); urine output.",
+"Treat cause + restore perfusion. Hypovol→blood; cardiogenic→inotropes; obstructive→decompress; septic→fluids+abx+noradrenaline; anaphylaxis→IM adrenaline.",
+"Untreated → MODS/death. Early recognition + cause-directed Rx; lactate tracks severity.")
+},
+
+"infx-1":{fields:F6('Definition','Organisms & types','Clinical features','Diagnosis','Treatment','Complications & key points'),
+learn:L(
+`These are bacterial infections of the skin and soft tissues. An <b>abscess</b> is a <span class="hl">localised collection of pus within a cavity</span>; a <b>phlegmon (cellulitis/flegmon)</b> is a <span class="hl">diffuse, spreading infection of soft tissue without a defined cavity</span>.`,
+`Usually <b>Staphylococcus aureus</b> (abscess, furuncle, carbuncle, hidradenitis) or <b>Streptococcus pyogenes</b> (erysipelas, spreading cellulitis). <b>Furuncle</b> = infected hair follicle (boil); <b>carbuncle</b> = several coalesced furuncles; <b>hidradenitis</b> = apocrine sweat-gland infection (axilla/groin); <b>erysipelas</b> = superficial dermal streptococcal infection with a sharp raised border.`,
+`Local signs of inflammation — <span class="hl">rubor, calor, dolor, tumor and loss of function</span>; an abscess is a fluctuant, tender swelling. Erysipelas is a well-demarcated, raised, fiery-red plaque with fever. Systemic: fever, malaise.`,
+`Mostly <b>clinical</b>. Ultrasound confirms a collection/abscess; swab and culture the pus; check WCC and CRP. Always exclude <span class="hl">necrotising fasciitis</span> — pain out of proportion, crepitus, systemic toxicity, skin necrosis.`,
+`<b>Abscess → incision and drainage</b> (source control is the priority). Antibiotics for cellulitis/phlegmon/erysipelas — anti-staphylococcal (flucloxacillin) or penicillin for erysipelas. Chronic hidradenitis may need wide excision.`,
+`Golden rule: <span class="hl">"where there is pus, drain it."</span> Spread can cause sepsis or <b>necrotising fasciitis</b> (a surgical emergency). A furuncle in the facial "danger triangle" risks <b>cavernous sinus thrombosis</b>.`),
+quiz:[
+ {q:"What is the difference between an abscess and a phlegmon (cellulitis)?",answer:"An abscess is a localised collection of pus within a cavity; a phlegmon/cellulitis is a diffuse spreading soft-tissue infection without a defined pus cavity.",keywords:["localised","collection","pus","cavity","diffuse","spreading"],minMatch:2},
+ {q:"What is the definitive treatment of an abscess?",answer:"Incision and drainage (source control); antibiotics are adjunctive, not a substitute.",keywords:["incision","drainage","drain","i&d"],minMatch:1},
+ {q:"Define furuncle and carbuncle.",answer:"Furuncle = infection of a single hair follicle (a boil). Carbuncle = several coalesced furuncles forming a deeper, multi-loculated lesion.",keywords:["hair follicle","boil","coalesced","furuncles","multiple"],minMatch:1}
+],
+flash:L(
+"Abscess = localised pus in a cavity. Phlegmon/cellulitis = diffuse spreading soft-tissue infection, no cavity.",
+"Staph aureus (abscess/furuncle/carbuncle/hidradenitis) or Strep pyogenes (erysipelas/cellulitis). Carbuncle=coalesced furuncles.",
+"Rubor/calor/dolor/tumor/loss of function; abscess = fluctuant. Erysipelas = sharp raised fiery-red plaque + fever.",
+"Clinical; US for collection; swab/culture; WCC/CRP. Exclude necrotising fasciitis (pain out of proportion, crepitus).",
+"Abscess → incision & drainage. Antibiotics (flucloxacillin; penicillin for erysipelas) for cellulitis/erysipelas.",
+"'Pus → drain it.' Spread → sepsis, necrotising fasciitis. Facial danger triangle → cavernous sinus thrombosis.")
+},
+
+"infx-2":{fields:F6('Definition','Causes','Clinical features','Diagnosis','Treatment','Complications & key points'),
+learn:L(
+`<b>Lymphangitis</b> is inflammation of lymphatic vessels; <b>lymphadenitis</b> is inflammation of lymph nodes; <b>elephantiasis</b> is gross chronic lymphoedema with skin thickening from long-standing lymphatic obstruction.`,
+`Lymphangitis and lymphadenitis usually arise from <b>bacterial infection</b> (Streptococcus, Staphylococcus) spreading from a distal focus (e.g. an infected wound). Elephantiasis results from <span class="hl">chronic lymphatic obstruction</span> — recurrent infection, <b>filariasis</b> (Wuchereria bancrofti), or damage after surgery/radiotherapy.`,
+`Lymphangitis: tender <span class="hl">red streaks running proximally</span> from an infected site toward the regional nodes, with fever. Lymphadenitis: enlarged, tender regional nodes. Elephantiasis: massive non-pitting limb swelling with thick, "peau d'orange" skin.`,
+`Clinical; identify the primary source. Bloods and cultures; in suspected filarial elephantiasis, a nocturnal blood smear for microfilariae and lymphoscintigraphy.`,
+`Treat the <b>source</b> plus <b>antibiotics</b>; rest and elevate the limb. Elephantiasis — meticulous hygiene, compression, elevation, and treat filariasis (diethylcarbamazine); surgical debulking in severe chronic cases.`,
+`Lymphangitis can progress to <b>sepsis</b>; the classic sign is a red streak tracking toward the nodes. Elephantiasis is chronic and largely irreversible, so <span class="hl">prevention (treating infections early)</span> is key.`),
+quiz:[
+ {q:"What is the classic clinical sign of lymphangitis?",answer:"Tender red streaks running proximally from an infected focus toward the regional lymph nodes, usually with fever.",keywords:["red streak","streak","proximal","toward","lymph"],minMatch:1},
+ {q:"What is the commonest infective cause of elephantiasis worldwide?",answer:"Lymphatic filariasis — infection with Wuchereria bancrofti obstructing lymphatics.",keywords:["filaria","wuchereria","filariasis"],minMatch:1},
+ {q:"How is elephantiasis managed?",answer:"Skin hygiene, compression and limb elevation, treat filariasis (diethylcarbamazine); surgical debulking for severe chronic disease. Prevention by treating infections early.",keywords:["compression","hygiene","elevation","diethylcarbamazine","debulking","surgery"],minMatch:2}
+],
+flash:L(
+"Lymphangitis = inflamed lymph vessels; lymphadenitis = inflamed nodes; elephantiasis = chronic lymphoedema + thick skin.",
+"Lymphangitis/adenitis: bacterial (Strep/Staph) from a distal focus. Elephantiasis: chronic obstruction — filariasis, recurrent infection, post-surgery/RT.",
+"Red streaks tracking proximally + fever; tender enlarged nodes; elephantiasis = massive non-pitting swelling, peau d'orange.",
+"Clinical; find source; cultures; blood smear for microfilariae + lymphoscintigraphy.",
+"Treat source + antibiotics, rest/elevate. Elephantiasis: hygiene, compression, elevation, diethylcarbamazine, debulking.",
+"Lymphangitis → sepsis risk. Elephantiasis irreversible → prevention key.")
+},
+
+"infx-3":{fields:F6('Definition','Cause & pathogenesis','Clinical features','Diagnosis','Treatment','Prevention & key points'),
+learn:L(
+`<b>Tetanus</b> is an acute, often fatal infection caused by the neurotoxin of <span class="hl">Clostridium tetani</span>, producing severe muscle spasms.`,
+`<b>C. tetani</b> is an anaerobic, spore-forming bacillus; spores enter through contaminated, deep or dirty <b>puncture wounds</b>. The toxin <b>tetanospasmin</b> travels retrograde up peripheral nerves and <span class="hl">blocks inhibitory neurotransmitters (GABA/glycine)</span>, causing unopposed muscle contraction.`,
+`Incubation ~7–10 days, then: <span class="hl">trismus (lockjaw)</span>, <b>risus sardonicus</b> (fixed grimace), neck stiffness, dysphagia, <b>opisthotonus</b> (arched back), and generalised painful spasms triggered by minimal stimuli, with autonomic instability. <b>Consciousness is preserved.</b>`,
+`A <b>clinical diagnosis</b> — a suggestive wound plus the characteristic spasms. There is no reliable confirmatory laboratory test.`,
+`<b>Wound débridement</b>; <b>human tetanus immunoglobulin</b> to neutralise unbound toxin; antibiotics (<b>metronidazole</b>); control spasms with benzodiazepines/muscle relaxants; ventilatory support in ICU; manage autonomic instability; and give the toxoid (active immunisation) during recovery.`,
+`<span class="hl">Prevention is by immunisation (toxoid)</span> plus wound prophylaxis — toxoid ± immunoglobulin for tetanus-prone wounds. Complications: laryngospasm and respiratory failure, fractures from spasms, autonomic dysfunction, death.`),
+quiz:[
+ {q:"What is the mechanism by which tetanus toxin causes spasms?",answer:"Tetanospasmin travels retrograde up nerves and blocks release of inhibitory neurotransmitters (GABA and glycine), causing unopposed muscle contraction/spasm.",keywords:["inhibitory","gaba","glycine","tetanospasmin","retrograde"],minMatch:2},
+ {q:"Name three classic clinical signs of tetanus.",answer:"Trismus (lockjaw), risus sardonicus, opisthotonus, neck stiffness, generalised spasms — consciousness preserved.",keywords:["trismus","lockjaw","risus","opisthotonus","spasm","stiffness"],minMatch:2},
+ {q:"Outline the treatment of established tetanus.",answer:"Wound débridement; human tetanus immunoglobulin; metronidazole; benzodiazepines/muscle relaxants for spasms; ICU ventilatory support; manage autonomic instability; toxoid on recovery.",keywords:["immunoglobulin","metronidazole","débridement","debridement","benzodiazepine","ventilation","toxoid"],minMatch:2}
+],
+flash:L(
+"Acute often-fatal disease from Clostridium tetani neurotoxin → severe muscle spasms.",
+"Anaerobic spore-former via deep/dirty wounds; tetanospasmin blocks inhibitory GABA/glycine → unopposed contraction.",
+"~7–10d: trismus, risus sardonicus, neck stiffness, opisthotonus, stimulus-triggered spasms, autonomic instability. Conscious.",
+"Clinical diagnosis (wound + spasms); no reliable lab test.",
+"Débride wound + human tetanus immunoglobulin + metronidazole + benzodiazepines + ICU/ventilation; toxoid on recovery.",
+"Prevent: toxoid immunisation + wound prophylaxis. Complications: laryngospasm/respiratory failure, fractures, autonomic dysfunction.")
+}
+};
+
+/* ============================================================
+   SUBJECT REGISTRY
+   ============================================================ */
+const SUBJECTS={
+  im:{name:'Internal Medicine',sections:IM_SECTIONS,titles:IM_TITLES,content:IM_CONTENT,fields:IM_FIELDS,storeKey:'mu_sofia_im_progress_v1'},
+  surg:{name:'Surgery',sections:SURG_SECTIONS,titles:SURG_TITLES,content:SURG_CONTENT,fields:SURG_FIELDS,storeKey:'mu_sofia_surg_progress_v1'}
+};
+
 function learnHTML(t){
   const L=t.content.learn;
-  let cards=FIELDS.map(([k,label,ic])=>`
+  const FL=t.content.fields||FIELDS;
+  let cards=FL.map(([k,label,ic])=>`
     <div class="field">
       <div class="field-head"><span class="field-icon">${ic}</span><h3>${label}</h3></div>
       <div class="field-body">${L[k]}</div>
@@ -1065,7 +1467,8 @@ function toggleMastered(key){const p=getP(key);setP(key,{mastered:!p.mastered});
 /* ---------- Flashcards ---------- */
 function flashHTML(t){
   const F=t.content.flash;
-  const cards=FIELDS.map(([k,label])=>`
+  const FL=t.content.fields||FIELDS;
+  const cards=FL.map(([k,label])=>`
     <div class="fc" onclick="this.classList.toggle('flipped')">
       <div class="fc-inner">
         <div class="fc-face fc-front"><div class="fc-lab">${label}</div>
@@ -1249,9 +1652,39 @@ document.getElementById('importFile').onchange=e=>{
 };
 
 /* ============================================================
+   SUBJECT SWITCHING
+   ============================================================ */
+function updateBrand(){
+  const s=SUBJECTS[activeSubject];
+  document.getElementById('brandEyebrow').textContent='MU Sofia · '+s.name;
+  document.getElementById('brandSub').textContent='Learn · Test · Revise · '+TOPICS.length+' topics';
+  document.querySelectorAll('.subj-btn').forEach(b=>b.classList.toggle('active',b.dataset.subj===activeSubject));
+  document.title=s.name+' — State Exam Revision · MU Sofia';
+}
+function switchSubject(id){
+  if(id===activeSubject)return;
+  loadSubject(id);
+  for(const k in collapsed)delete collapsed[k];
+  currentKey=null; route='dashboard';
+  document.getElementById('search').value='';
+  updateBrand();
+  buildNav();
+  render();
+  refreshStatusUI();
+  document.getElementById('main').scrollTop=0;
+  closeSidebar();
+  toast('Switched to '+SUBJECTS[id].name);
+}
+document.querySelectorAll('.subj-btn').forEach(b=>b.onclick=()=>switchSubject(b.dataset.subj));
+
+/* ============================================================
    INIT
    ============================================================ */
 initTheme();
+let savedSubject='im';
+try{savedSubject=localStorage.getItem(SUBJECT_KEY)||'im'}catch(e){}
+loadSubject(savedSubject);
+updateBrand();
 buildNav();
 render();
 refreshStatusUI();
